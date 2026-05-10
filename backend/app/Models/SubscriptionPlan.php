@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use app\Models\BaseModel;
+
 
 class SubscriptionPlan extends BaseModel
 {

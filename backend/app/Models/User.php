@@ -19,7 +19,7 @@ class User extends Authenticatable implements JWTSubject
     protected $guarded = [];
 
     protected $hidden = [
-        'password_hash',
+        'password',
         'two_fa_secret',
     ];
 
@@ -39,7 +39,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function getAuthPassword()
     {
-        return $this->password_hash;
+        return $this->password;
     }
 
     /*
@@ -239,5 +239,50 @@ class User extends Authenticatable implements JWTSubject
     public function hasPermission($permission)
     {
         return $this->permissions()->where('slug', $permission)->exists();
+    }
+
+
+    public function projectNotes()
+    {
+        return $this->hasMany(
+            ProjectNote::class,
+            'created_by'
+        );
+    }
+
+    public function createdEstimates()
+    {
+        return $this->hasMany(
+            ProjectEstimate::class,
+            'created_by'
+        );
+    }
+
+    public function clientEstimates()
+    {
+        return $this->hasMany(
+            ProjectEstimate::class,
+            'client_id'
+        );
+    }
+
+    public function companies()
+    {
+        return $this->belongsToMany(
+
+            Company::class,
+
+            'company_users'
+        )
+            ->withPivot([
+
+                'designation',
+
+                'employee_code',
+
+                'salary',
+
+                'status',
+            ]);
     }
 }

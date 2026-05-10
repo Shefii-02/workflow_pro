@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->text('avatar_url')->nullable();
 
-            $table->enum('role',['freelancer','company','client','admin'])->default('freelancer');
+            $table->enum('role',['freelancer','company','client','super_admin','admin_staff','admin','company_staff','client_staff'])->default('freelancer');
 
             $table->uuid('company_id')->nullable();
 
@@ -35,6 +35,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
+            $table->index('company_id');
+
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -45,7 +47,8 @@ return new class extends Migration
 
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index();
+            $table->uuid('user_id')->nullable()->index();
+            // $table->foreignId('user_id')->nullable()->index();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->longText('payload');

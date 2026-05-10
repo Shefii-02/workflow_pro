@@ -2,19 +2,40 @@
 
 namespace App\Models;
 
-use app\Models\BaseModel;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-class Role extends BaseModel
+class Role extends Model
 {
-    protected $fillable = ['name','slug'];
+    use HasUuids, SoftDeletes;
+
+    protected $fillable = [
+
+        'company_id',
+
+        'name',
+
+        'slug',
+
+        'description',
+
+        'is_system',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONS
+    |--------------------------------------------------------------------------
+    */
 
     public function permissions()
     {
-        return $this->belongsToMany(Permission::class, 'role_permissions');
-    }
+        return $this->belongsToMany(
 
-    public function users()
-    {
-        return $this->belongsToMany(User::class, 'user_roles');
+            Permission::class,
+
+            'role_permissions'
+        );
     }
 }

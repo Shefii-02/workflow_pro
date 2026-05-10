@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use app\Models\BaseModel;
+
 
 class Invoice extends BaseModel
 {
-    protected $fillable = ['company_id','client_id','total_amount'];
+    protected $fillable = ['company_id', 'client_id', 'total_amount','invoice_number'];
 
     public function company()
     {
@@ -21,5 +21,13 @@ class Invoice extends BaseModel
     public function items()
     {
         return $this->hasMany(InvoiceItem::class);
+    }
+
+    public function estimate()
+    {
+        return $this->belongsTo(
+            ProjectEstimate::class,
+            'estimate_id'
+        );
     }
 }

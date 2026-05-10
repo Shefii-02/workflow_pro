@@ -13,6 +13,7 @@ return new class extends Migration {
             $table->text('description')->nullable();
             $table->boolean('is_system')->default(false);
             $table->timestamps();
+
         });
     }
 

@@ -2,14 +2,31 @@
 
 namespace App\Models;
 
-use app\Models\BaseModel;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-class Permission extends BaseModel
+class Permission extends Model
 {
-    protected $fillable = ['name','slug','module','action'];
+    use HasUuids;
+
+    protected $fillable = [
+
+        'module',
+
+        'name',
+
+        'action',
+
+        'slug',
+    ];
 
     public function roles()
     {
-        return $this->belongsToMany(Role::class, 'role_permissions');
+        return $this->belongsToMany(
+
+            Role::class,
+
+            'permission_role'
+        );
     }
 }

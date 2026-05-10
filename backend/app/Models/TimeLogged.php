@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use app\Models\BaseModel;
+
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TimeLogged extends BaseModel

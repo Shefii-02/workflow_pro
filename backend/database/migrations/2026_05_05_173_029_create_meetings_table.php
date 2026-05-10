@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->text('description')->nullable();
 
             $table->timestamp('starts_at');
-            $table->timestamp('ends_at');
+            $table->timestamp('ends_at')->nullable();
 
             $table->enum('platform', ['google_meet', 'zoom', 'teams', 'custom'])->default('custom');
             $table->text('meeting_link')->nullable();

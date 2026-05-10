@@ -8,11 +8,10 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('project_members', function (Blueprint $table) {
-            $table->uuid('id')->primary();
             $table->uuid('project_id');
             $table->uuid('user_id');
 
-            $table->enum('role', ['owner', 'manager', 'member', 'viewer'])->default('member');
+            $table->string('role')->default('staff');
             $table->timestamp('joined_at')->useCurrent();
 
             $table->unique(['project_id', 'user_id']);

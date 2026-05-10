@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use app\Models\BaseModel;
-
 class Company extends BaseModel
 {
     protected $fillable = ['name', 'slug', 'owner_id'];
@@ -27,4 +25,26 @@ class Company extends BaseModel
     {
         return $this->hasMany(SubscriptionPurchase::class);
     }
+
+
+
+    public function staff()
+{
+    return $this->belongsToMany(
+
+        User::class,
+
+        'company_users'
+    )
+    ->withPivot([
+
+        'designation',
+
+        'employee_code',
+
+        'salary',
+
+        'status',
+    ]);
+}
 }
