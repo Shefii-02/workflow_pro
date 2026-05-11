@@ -13,7 +13,8 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useLocalStorage<ThemeMode>(STORAGE_KEYS.THEME, 'light')
+  const defaultTheme: ThemeMode = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  const [theme, setTheme] = useLocalStorage<ThemeMode>(STORAGE_KEYS.THEME, defaultTheme)
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
