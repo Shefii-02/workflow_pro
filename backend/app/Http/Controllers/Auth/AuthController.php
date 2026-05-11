@@ -38,64 +38,100 @@ class AuthController extends Controller
 
         $user = auth()->user();
 
+        // Revoke existing refresh tokens for this user
+        RefreshToken::where('user_id', $user->id)
+            ->where('revoked', false)
+            ->update(['revoked' => true]);
 
         $refreshToken = Str::random(64);
+        $accessTokenExpiry = now()->addMinutes(config('jwt.ttl', 60)); // Default 60 minutes
 
         RefreshToken::create([
             'user_id' => $user->id,
             'token_hash' => Hash::make($refreshToken),
-            'expires_at' => now()->addDays(7),
+            'expires_at' => now()->addDays(7), // Refresh token expires in 7 days
+            'access_token_expires_at' => $accessTokenExpiry,
         ]);
 
         return response()->json([
             'access_token' => $token,
             'refresh_token' => $refreshToken,
-            'expires_in' => auth()->factory()->getTTL() * 3600
+            'token_type' => 'Bearer',
+            'expires_in' => config('jwt.ttl', 60) * 60, // Convert to seconds
+            'refresh_expires_in' => 7 * 24 * 60 * 60, // 7 days in seconds
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'account_type' => $user->account_type ?? 'company', // Default account type
+            ]
         ]);
     }
 
     public function refresh(Request $request)
     {
         $request->validate([
-            'refresh_token' => 'required'
+            'refresh_token' => 'required|string'
         ]);
 
-        $tokens = RefreshToken::where('revoked', false)->get();
+        // Find the refresh token
+        $refreshToken = RefreshToken::where('revoked', false)
+            ->where('expires_at', '>', now())
+            ->get()
+            ->first(function ($token) use ($request) {
+                return Hash::check($request->refresh_token, $token->token_hash);
+            });
 
-        foreach ($tokens as $token) {
-            if (Hash::check($request->refresh_token, $token->token_hash)) {
-
-                if ($token->expires_at->isPast()) {
-                    return response()->json(['error' => 'Token expired'], 401);
-                }
-
-                $user = $token->user;
-
-                $newAccessToken = auth()->login($user);
-
-                return response()->json([
-                    'access_token' => $newAccessToken,
-                    'expires_in' => auth()->factory()->getTTL() * 60
-                ]);
-            }
+        if (!$refreshToken) {
+            return response()->json(['error' => 'Invalid or expired refresh token'], 401);
         }
 
-        return response()->json(['error' => 'Invalid token'], 401);
+        $user = $refreshToken->user;
+
+        // Generate new access token
+        $newAccessToken = auth()->login($user);
+        $accessTokenExpiry = now()->addMinutes(config('jwt.ttl', 60));
+
+        // Revoke the used refresh token and create a new one (rotation)
+        $refreshToken->update(['revoked' => true]);
+
+        $newRefreshToken = Str::random(64);
+        RefreshToken::create([
+            'user_id' => $user->id,
+            'token_hash' => Hash::make($newRefreshToken),
+            'expires_at' => now()->addDays(7),
+            'access_token_expires_at' => $accessTokenExpiry,
+        ]);
+
+        return response()->json([
+            'access_token' => $newAccessToken,
+            'refresh_token' => $newRefreshToken,
+            'token_type' => 'Bearer',
+            'expires_in' => config('jwt.ttl', 60) * 60,
+            'refresh_expires_in' => 7 * 24 * 60 * 60,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'account_type' => $user->account_type ?? 'company',
+            ]
+        ]);
     }
 
-    public function logout(Request $request)
+    public function me(Request $request)
     {
-        auth()->logout();
+        $user = auth()->user();
 
-        if ($request->refresh_token) {
-            RefreshToken::where('revoked', false)->get()
-                ->each(function ($token) use ($request) {
-                    if (Hash::check($request->refresh_token, $token->token_hash)) {
-                        $token->update(['revoked' => true]);
-                    }
-                });
-        }
-
-        return response()->json(['message' => 'Logged out']);
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'account_type' => $user->account_type ?? 'company',
+                'email_verified_at' => $user->email_verified_at,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
+            ]
+        ]);
     }
 }

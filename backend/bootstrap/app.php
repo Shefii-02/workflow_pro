@@ -17,6 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
         //
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
+            'auth.api' => \App\Http\Middleware\AuthenticateApi::class,
+            'account.type' => \App\Http\Middleware\AccountTypeRedirect::class,
 
             'company' => \App\Http\Middleware\SetCompanyScope::class,
         ]);

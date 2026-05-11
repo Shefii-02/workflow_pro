@@ -213,10 +213,11 @@ export interface SidebarItem {
   id: string
   label: string
   path: string
-  icon: string
+  icon: string | React.ReactNode
   children?: SidebarItem[]
   permissions?: Permission[]
-  badge?: string
+  badge?: string | number
+  badgeVariant?: 'default' | 'info' | 'success' | 'warning' | 'danger'
 }
 
 // Form

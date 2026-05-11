@@ -1,126 +1,64 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
-import { AccountType } from './shared/types'
+import { Suspense, useEffect } from 'react'
+import { useMatches, useRoutes } from 'react-router-dom'
+import { useTokenRefresh, useSessionExpiry } from './hooks/useAuth'
+import { useSessionTracker } from './hooks/useSessionTracker'
+import { AuthErrorBoundary } from './auth/components/AuthErrorBoundary'
+import { useConfirmDialog } from './shared/components'
+import { appRoutes } from './routes/routeConfig'
 
-// Auth
-import AuthGuard from './auth/guards/AuthGuard'
-import AccountTypeGuard from './auth/guards/AccountTypeGuard'
-import LoginPage from './auth/pages/LoginPage'
+function AppContent() {
+  useTokenRefresh()
+  useSessionExpiry()
 
-// Pages
-import UnauthorizedPage from './pages/Unauthorized'
+  const { confirm } = useConfirmDialog()
+  const matches = useMatches()
 
-// Components
-import { Layout } from './shared/components/Layout'
-import { TopHeader } from './shared/components/TopHeader'
+  useSessionTracker({
+    timeoutMinutes: 60,
+    warningMinutes: 5,
+    onWarning: () => {
+      const warningShown = localStorage.getItem('sessionWarningShown')
+      if (!warningShown) {
+        confirm({
+          title: 'Session Expiring Soon',
+          description: 'Your session will expire in 5 minutes due to inactivity. Would you like to extend your session?',
+          confirmText: 'Stay Logged In',
+          cancelText: 'Logout Now',
+          variant: 'warning',
+          onConfirm: () => {
+            localStorage.setItem('sessionWarningShown', 'true')
+          },
+          onCancel: () => {
+            window.location.href = '/login'
+          },
+        })
+      }
+    },
+    onTimeout: () => {
+      localStorage.removeItem('sessionWarningShown')
+    },
+  })
 
-// SP Modules
-import { spSidebarConfig } from './modules/sp/config/sidebar'
-import SPDashboard from './modules/sp/pages/Dashboard'
-import SPCompanies from './modules/sp/pages/Companies'
-import SPFreelancers from './modules/sp/pages/Freelancers'
+  useEffect(() => {
+    const title = matches
+      .map((match) => (match.handle as { title?: string } | undefined)?.title)
+      .filter((value): value is string => Boolean(value))
+      .reverse()[0]
 
-// Company Modules
-import { companySidebarConfig } from './modules/sidebar.config'
-import CompanyDashboard from './modules/company/pages/Dashboard'
-import CompanyProjects from './modules/company/pages/Projects'
+    if (title) {
+      document.title = title
+    }
+  }, [matches])
 
-// Freelancer Modules
-import { freelancerSidebarConfig } from './modules/sidebar.config'
-import FreelancerDashboard from './modules/freelancer/pages/Dashboard'
-import FreelancerProjects from './modules/freelancer/pages/Projects'
+  const routing = useRoutes(appRoutes)
 
-// Client Modules
-import { clientSidebarConfig } from './modules/sidebar.config'
-import ClientDashboard from './modules/client/pages/Dashboard'
-
-function SPLayout() {
-  return (
-    <Layout
-      sidebar={{ items: spSidebarConfig, branding: { logo: '⚡', name: 'Workflow', tagline: 'Super Platform' } }}
-      header={<TopHeader />}
-    >
-      <Routes>
-        <Route path="dashboard" element={<SPDashboard />} />
-        <Route path="companies" element={<SPCompanies />} />
-        <Route path="freelancers" element={<SPFreelancers />} />
-        <Route path="*" element={<Navigate to="dashboard" replace />} />
-      </Routes>
-    </Layout>
-  )
-}
-
-function CompanyLayout() {
-  return (
-    <Layout
-      sidebar={{ items: companySidebarConfig, branding: { logo: '🏢', name: 'Workflow', tagline: 'Company' } }}
-      header={<TopHeader />}
-    >
-      <Routes>
-        <Route path="dashboard" element={<CompanyDashboard />} />
-        <Route path="projects" element={<CompanyProjects />} />
-        <Route path="*" element={<Navigate to="dashboard" replace />} />
-      </Routes>
-    </Layout>
-  )
-}
-
-function FreelancerLayout() {
-  return (
-    <Layout
-      sidebar={{ items: freelancerSidebarConfig, branding: { logo: '👨‍💼', name: 'Workflow', tagline: 'Freelancer' } }}
-      header={<TopHeader />}
-    >
-      <Routes>
-        <Route path="dashboard" element={<FreelancerDashboard />} />
-        <Route path="projects" element={<FreelancerProjects />} />
-        <Route path="*" element={<Navigate to="dashboard" replace />} />
-      </Routes>
-    </Layout>
-  )
-}
-
-function ClientLayout() {
-  return (
-    <Layout
-      sidebar={{ items: clientSidebarConfig, branding: { logo: '👤', name: 'Workflow', tagline: 'Client' } }}
-      header={<TopHeader />}
-    >
-      <Routes>
-        <Route path="dashboard" element={<ClientDashboard />} />
-        <Route path="*" element={<Navigate to="dashboard" replace />} />
-      </Routes>
-    </Layout>
-  )
+  return <Suspense fallback={<div>Loading...</div>}>{routing}</Suspense>
 }
 
 export default function App() {
   return (
-    <Routes>
-      {/* Auth Routes */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/unauthorized" element={<UnauthorizedPage />} />
-
-      {/* Protected Routes */}
-      <Route element={<AuthGuard />}>
-        <Route element={<AccountTypeGuard allowedTypes={[AccountType.SP]} />}>
-          <Route path="/sp/*" element={<SPLayout />} />
-        </Route>
-
-        <Route element={<AccountTypeGuard allowedTypes={[AccountType.COMPANY]} />}>
-          <Route path="/company/*" element={<CompanyLayout />} />
-        </Route>
-
-        <Route element={<AccountTypeGuard allowedTypes={[AccountType.FREELANCER]} />}>
-          <Route path="/freelancer/*" element={<FreelancerLayout />} />
-        </Route>
-
-        <Route element={<AccountTypeGuard allowedTypes={[AccountType.CLIENT]} />}>
-          <Route path="/client/*" element={<ClientLayout />} />
-        </Route>
-      </Route>
-
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+    <AuthErrorBoundary>
+      <AppContent />
+    </AuthErrorBoundary>
   )
 }

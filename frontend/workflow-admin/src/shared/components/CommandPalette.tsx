@@ -8,7 +8,7 @@ export interface CommandAction {
   label: string
   description: string
   path: string
-  icon: string
+  icon: string | React.ReactNode
 }
 
 interface CommandPaletteProps {

@@ -18,7 +18,7 @@ interface CommandItem {
   label: string
   description: string
   path: string
-  icon: string
+  icon: string | React.ReactNode
 }
 
 const flattenCommandItems = (items: SidebarItem[], parent?: string): CommandItem[] =>

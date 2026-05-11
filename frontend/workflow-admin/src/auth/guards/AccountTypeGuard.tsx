@@ -1,16 +1,20 @@
 import { Navigate, Outlet } from 'react-router-dom'
-import type { AccountType } from '../../shared/types'
-import { useAppSelector } from '../../app/store/hooks'
+import { useAppSelector } from '../../store/hooks'
 
 interface AccountTypeGuardProps {
-  allowedTypes: AccountType[]
+  allowedTypes: string[]
+  redirectTo?: string
 }
 
-export function AccountTypeGuard({ allowedTypes }: AccountTypeGuardProps) {
-  const user = useAppSelector((state) => state.auth.user)
+export function AccountTypeGuard({ allowedTypes, redirectTo = '/unauthorized' }: AccountTypeGuardProps) {
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth)
 
-  if (!user || !allowedTypes.includes(user.accountType)) {
-    return <Navigate to="/unauthorized" replace />
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (!user || !allowedTypes.includes(user.account_type)) {
+    return <Navigate to={redirectTo} replace />
   }
 
   return <Outlet />

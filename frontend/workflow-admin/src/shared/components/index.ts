@@ -1,0 +1,33 @@
+// Enterprise Components Index
+// Export all reusable enterprise-grade components
+
+export { StatusBadge } from './StatusBadge'
+export { PageContainer } from './PageContainer'
+export { SectionHeader } from './SectionHeader'
+export { LoadingScreen } from './LoadingScreen'
+export { ErrorBoundary } from './ErrorBoundary'
+export { PermissionGate, usePermissions, withPermissionGate } from './PermissionGate'
+export { ReusableModal } from './ReusableModal'
+export { ConfirmActionDialog, useConfirmDialog } from './ConfirmActionDialog'
+export { GlobalSearch } from './GlobalSearch'
+export { AnalyticsCard } from './AnalyticsCard'
+export { DashboardSection } from './DashboardSection'
+export { SmartDataTable } from './SmartDataTable'
+export { FormGenerator } from './FormGenerator'
+export { ActivityTimeline, CompactTimeline } from './ActivityTimeline'
+
+// Re-export commonly used types
+export type { StatusBadgeProps } from './StatusBadge'
+export type { PageContainerProps } from './PageContainer'
+export type { SectionHeaderProps } from './SectionHeader'
+export type { LoadingScreenProps } from './LoadingScreen'
+export type { ErrorBoundaryProps } from './ErrorBoundary'
+export type { PermissionGateProps } from './PermissionGate'
+export type { ReusableModalProps } from './ReusableModal'
+export type { ConfirmActionDialogProps } from './ConfirmActionDialog'
+export type { GlobalSearchProps, SearchResult } from './GlobalSearch'
+export type { AnalyticsCardProps } from './AnalyticsCard'
+export type { DashboardSectionProps } from './DashboardSection'
+export type { SmartDataTableProps } from './SmartDataTable'
+export type { FormGeneratorProps, FormField } from './FormGenerator'
+export type { ActivityTimelineProps, TimelineItem } from './ActivityTimeline'

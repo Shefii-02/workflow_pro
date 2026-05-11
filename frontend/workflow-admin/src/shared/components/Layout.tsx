@@ -1,9 +1,10 @@
-import React, { cloneElement, useEffect, useMemo, useState } from 'react'
+import React, { cloneElement, useEffect, useMemo, useState, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Breadcrumbs } from './Breadcrumbs'
 import { cn, Storage } from '../utils/helpers'
 import type { SidebarItem } from '../types'
 import { STORAGE_KEYS } from '../constants'
+import { usePermissions } from '../hooks'
 
 interface SidebarProps {
   items: SidebarItem[]
@@ -29,8 +30,57 @@ export function Sidebar({
   const navigate = useNavigate()
   const location = useLocation()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
+  const { hasAnyPermission } = usePermissions()
 
-  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/')
+  const normalizePath = useCallback((path: string) => path.split('?')[0].replace(/\/$/, '') || '/', [])
+
+  const isActive = useCallback(
+    (path: string) => {
+      const normalized = normalizePath(path)
+      return (
+        location.pathname === normalized ||
+        location.pathname.startsWith(`${normalized}/`)
+      )
+    },
+    [location.pathname, normalizePath],
+  )
+
+  const filterItems = useCallback(
+    (items: SidebarItem[]): SidebarItem[] =>
+      items
+        .map((item) => {
+          const allowed = !item.permissions || item.permissions.length === 0 || hasAnyPermission(item.permissions)
+          if (!allowed) return null
+
+          const children = item.children ? filterItems(item.children) : undefined
+          if (item.children && (!children || children.length === 0)) {
+            return { ...item, children: undefined }
+          }
+
+          return { ...item, children }
+        })
+        .filter(Boolean) as SidebarItem[],
+    [hasAnyPermission],
+  )
+
+  const filteredItems = useMemo(() => filterItems(items), [items, filterItems])
+
+  const getActiveParentIds = useCallback(
+    (item: SidebarItem, parents: string[] = []): string[] => {
+      const itemActive = isActive(item.path)
+      const childIds = item.children?.flatMap((child) => getActiveParentIds(child, [...parents, item.id])) ?? []
+      if (itemActive) {
+        return parents
+      }
+      return childIds
+    },
+    [isActive],
+  )
+
+  useEffect(() => {
+    const activeParentIds = filteredItems.flatMap((item) => getActiveParentIds(item))
+    setExpandedItems((prev) => Array.from(new Set([...prev, ...activeParentIds])))
+  }, [filteredItems, getActiveParentIds])
 
   const toggleExpand = (id: string) => {
     setExpandedItems((prev) =>
@@ -75,6 +125,22 @@ export function Sidebar({
               {item.icon}
             </span>
             <span className={cn('truncate transition-opacity', { 'opacity-0': !isOpen })}>{item.label}</span>
+            {item.badge && isOpen && (
+              <span
+                className={cn(
+                  'ml-auto rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
+                  {
+                    'bg-slate-200 text-slate-800': item.badgeVariant === 'default' || !item.badgeVariant,
+                    'bg-emerald-500 text-white': item.badgeVariant === 'success',
+                    'bg-sky-500 text-white': item.badgeVariant === 'info',
+                    'bg-amber-500 text-slate-900': item.badgeVariant === 'warning',
+                    'bg-rose-500 text-white': item.badgeVariant === 'danger',
+                  },
+                )}
+              >
+                {item.badge}
+              </span>
+            )}
           </span>
 
           {hasChildren && isOpen && (
