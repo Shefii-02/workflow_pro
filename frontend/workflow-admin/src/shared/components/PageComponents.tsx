@@ -1,6 +1,6 @@
 import React from 'react'
 import { cn } from '../../shared/utils/helpers'
-import { Card } from './Card'
+import { Card, EmptyState, Skeleton } from './Card'
 
 // Page Header
 export interface PageHeaderProps {
@@ -50,29 +50,89 @@ export interface StatCardProps {
   change?: { value: number; type: 'increase' | 'decrease' }
   unit?: string
   icon?: React.ReactNode
-  trend?: 'up' | 'down' | 'neutral'
+  description?: string
+  variant?: 'brand' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'
 }
 
-export function StatCard({ label, value, change, unit, icon }: StatCardProps) {
+const statVariantClasses: Record<NonNullable<StatCardProps['variant']>, string> = {
+  brand: 'text-brand-700 bg-brand-50 ring-brand-100',
+  success: 'text-emerald-700 bg-emerald-50 ring-emerald-100',
+  warning: 'text-amber-700 bg-amber-50 ring-amber-100',
+  danger: 'text-rose-700 bg-rose-50 ring-rose-100',
+  info: 'text-sky-700 bg-sky-50 ring-sky-100',
+  neutral: 'text-slate-700 bg-slate-50 ring-slate-100',
+}
+
+export function StatCard({ label, value, change, unit, icon, description, variant = 'neutral' }: StatCardProps) {
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600">{label}</p>
-          <div className="mt-2 flex items-baseline gap-2">
-            <p className="text-2xl font-bold text-gray-900">{value}</p>
-            {unit && <p className="text-sm text-gray-600">{unit}</p>}
+    <Card className="hover:shadow-lg transition-shadow border border-border">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-slate-500 uppercase tracking-[0.15em]">{label}</p>
+          <div className="mt-3 flex items-baseline gap-2">
+            <p className="text-3xl font-semibold text-slate-950">{value}</p>
+            {unit && <span className="text-sm text-slate-500">{unit}</span>}
           </div>
+          {description && <p className="mt-2 text-sm text-slate-500">{description}</p>}
           {change && (
-            <p className={cn('mt-2 text-sm font-medium', {
-              'text-green-600': change.type === 'increase',
-              'text-red-600': change.type === 'decrease',
-            })}>
-              {change.type === 'increase' ? '↑' : '↓'} {Math.abs(change.value)}% from last month
-            </p>
+            <p className={cn(
+              'mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium',
+              change.type === 'increase' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700',
+            )}
+          >
+            {change.type === 'increase' ? '▲' : '▼'} {Math.abs(change.value)}% from last month
+          </p>
           )}
         </div>
-        {icon && <div className="text-2xl opacity-50">{icon}</div>}
+        {icon && (
+          <div className={cn(
+            'inline-flex h-12 w-12 items-center justify-center rounded-3xl text-xl shadow-sm ring-1',
+            statVariantClasses[variant],
+          )}>
+            {icon}
+          </div>
+        )}
+      </div>
+    </Card>
+  )
+}
+
+export interface ProgressWidgetCardProps {
+  title: string
+  value: string | number
+  progress: number
+  description?: string
+  label?: string
+  accent?: 'brand' | 'success' | 'warning' | 'danger' | 'info'
+}
+
+const progressAccentClasses: Record<NonNullable<ProgressWidgetCardProps['accent']>, string> = {
+  brand: 'bg-brand-600',
+  success: 'bg-emerald-500',
+  warning: 'bg-amber-500',
+  danger: 'bg-rose-500',
+  info: 'bg-sky-500',
+}
+
+export function ProgressWidgetCard({ title, value, progress, description, label, accent = 'brand' }: ProgressWidgetCardProps) {
+  return (
+    <Card className="hover:shadow-lg transition-shadow border border-border">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-slate-500 uppercase tracking-[0.15em]">{title}</p>
+          <p className="mt-3 text-3xl font-semibold text-slate-950">{value}</p>
+          {description && <p className="mt-2 text-sm text-slate-500">{description}</p>}
+        </div>
+        {label && <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">{label}</span>}
+      </div>
+      <div className="mt-5 grid gap-3">
+        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+          <div className={cn('h-full rounded-full transition-all duration-300', progressAccentClasses[accent])} style={{ width: `${progress}%` }}></div>
+        </div>
+        <div className="flex items-center justify-between text-xs text-slate-500">
+          <span>Used</span>
+          <span>{progress}%</span>
+        </div>
       </div>
     </Card>
   )
@@ -82,18 +142,59 @@ export function StatCard({ label, value, change, unit, icon }: StatCardProps) {
 export interface AnalyticsChartCardProps {
   title: string
   description?: string
-  chart: React.ReactNode
+  chart?: React.ReactNode
   footer?: React.ReactNode
+  isLoading?: boolean
+  isEmpty?: boolean
+  emptyTitle?: string
+  emptyDescription?: string
+  emptyAction?: React.ReactNode
 }
 
-export function AnalyticsChartCard({ title, description, chart, footer }: AnalyticsChartCardProps) {
+export function AnalyticsChartCard({
+  title,
+  description,
+  chart,
+  footer,
+  isLoading = false,
+  isEmpty = false,
+  emptyTitle = 'No analytics available',
+  emptyDescription,
+  emptyAction,
+}: AnalyticsChartCardProps) {
   return (
     <Card>
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
         {description && <p className="mt-1 text-sm text-gray-600">{description}</p>}
       </div>
-      <div className="mt-6">{chart}</div>
+      <div className="mt-6 min-h-[320px]">
+        {isLoading ? (
+          <div className="space-y-5">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-5 w-1/2" />
+            </div>
+            <div className="h-[280px] rounded-3xl bg-slate-100 overflow-hidden">
+              <div className="h-full w-full animate-pulse bg-slate-200" />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Skeleton className="h-12 rounded-3xl" />
+              <Skeleton className="h-12 rounded-3xl" />
+              <Skeleton className="h-12 rounded-3xl" />
+            </div>
+          </div>
+        ) : isEmpty ? (
+          <EmptyState
+            icon="📭"
+            title={emptyTitle}
+            description={emptyDescription}
+            action={emptyAction}
+          />
+        ) : (
+          chart
+        )}
+      </div>
       {footer && <div className="mt-6 border-t border-gray-200 pt-6">{footer}</div>}
     </Card>
   )

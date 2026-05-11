@@ -183,16 +183,32 @@ export const mockNotifications: Notification[] = [
 
 // Analytics data
 export const mockAnalytics = {
+  revenue: 182500,
+  revenueChange: 7.4,
   totalRequests: 245123,
+  apiRequestsHourly: [1200, 1450, 1310, 1560, 1490, 1580, 1625],
   activeUsers: 1234,
   registrations: 56,
   failedRequests: 12,
   deadAccounts: 4,
   storageUsage: 856,
+  totalStorage: 1024,
   websocketConnections: 234,
   activeSessions: 567,
   memoryUsage: 4.2,
   queueJobs: 89,
+  subscriptions: {
+    active: 987,
+    trials: 143,
+    churnRate: 1.8,
+    total: 1248,
+  },
+  projectBreakdown: [
+    { label: 'Active', value: 62 },
+    { label: 'Planning', value: 18 },
+    { label: 'Delayed', value: 10 },
+    { label: 'Completed', value: 10 },
+  ],
   taskActivity: [
     { date: 'Mon', completed: 12, pending: 8 },
     { date: 'Tue', completed: 14, pending: 6 },
