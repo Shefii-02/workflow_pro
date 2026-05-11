@@ -51,7 +51,6 @@ export function CommandPalette({ open, items = [], actions = [], onClose }: Comm
 
   useEffect(() => {
     if (open) {
-      setQuery('')
       inputRef.current?.focus()
     }
   }, [open])
@@ -72,34 +71,35 @@ export function CommandPalette({ open, items = [], actions = [], onClose }: Comm
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 backdrop-blur-sm p-4">
-      <Card className="w-full max-w-2xl overflow-hidden border border-slate-200/80 shadow-2xl bg-white/95 backdrop-blur-xl">
-        <div className="border-b border-slate-200/60 bg-slate-50/80 px-6 py-4 backdrop-blur-sm">
-          <div className="flex flex-col gap-3">
-            <p className="text-sm uppercase tracking-[0.15em] text-slate-500 font-semibold">Command Palette</p>
+    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/45 p-4">
+      <Card className="w-full max-w-2xl overflow-hidden border border-slate-200 bg-white p-0 shadow-elevated">
+        <div className="border-b border-slate-200 bg-slate-50 px-4 py-3">
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-semibold uppercase text-slate-500">Command Palette</p>
             <input
               ref={inputRef}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search commands, pages, or actions..."
-              className="w-full rounded-xl border border-slate-200/60 bg-white/80 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-200 backdrop-blur-sm"
+              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100"
             />
           </div>
         </div>
-        <div className="max-h-[480px] overflow-y-auto p-4">
+        <div className="max-h-[480px] overflow-y-auto p-2">
           {filteredCommands.length ? (
-            <div className="grid gap-2">
+            <div className="grid gap-1">
               {filteredCommands.map((command) => (
                 <button
                   key={command.id}
                   onClick={() => {
                     navigate(command.path)
+                    setQuery('')
                     onClose()
                   }}
-                  className="w-full rounded-xl border border-slate-200/60 bg-white/80 px-4 py-3 text-left transition-all hover:border-brand-300 hover:bg-brand-50/80 hover:shadow-sm backdrop-blur-sm"
+                  className="w-full rounded-md px-3 py-2.5 text-left transition-colors hover:bg-slate-50"
                 >
-                  <div className="flex items-center gap-4 text-slate-900">
-                    <span className="text-xl">{command.icon}</span>
+                  <div className="flex items-center gap-3 text-slate-900">
+                    <span className="text-base">{command.icon}</span>
                     <div className="flex-1">
                       <p className="font-semibold">{command.label}</p>
                       <p className="text-sm text-slate-500">{command.description}</p>
@@ -112,8 +112,8 @@ export function CommandPalette({ open, items = [], actions = [], onClose }: Comm
               ))}
             </div>
           ) : (
-            <div className="rounded-xl border border-dashed border-slate-200/60 bg-slate-50/50 px-6 py-12 text-center backdrop-blur-sm">
-              <svg className="mx-auto h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-5 py-6 text-center">
+              <svg className="mx-auto h-9 w-9 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <p className="mt-4 text-sm text-slate-500">No commands found. Try another search term.</p>

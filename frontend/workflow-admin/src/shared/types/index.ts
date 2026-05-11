@@ -238,7 +238,7 @@ export interface FormField {
 export interface TableColumn<T> {
   accessorKey: keyof T | string
   header: string
-  cell?: (value: any) => React.ReactNode
+  cell?: (value: unknown) => React.ReactNode
   sortable?: boolean
   filterable?: boolean
   width?: number

@@ -92,7 +92,7 @@ export function ActivityTimeline({
   if (displayItems.length === 0) {
     return (
       <Card className={cn('p-6', className)}>
-        <div className="text-center py-8">
+        <div className="text-center py-5">
           <div className="text-4xl mb-4">📅</div>
           <h3 className="text-lg font-semibold text-slate-900 mb-2">{emptyTitle}</h3>
           <p className="text-slate-600 mb-4">{emptyDescription}</p>

@@ -76,17 +76,17 @@ export function ReusableModal({
       {/* Modal */}
       <div
         className={cn(
-          'relative bg-white rounded-3xl shadow-2xl border max-h-[90vh] overflow-hidden',
+          'relative max-h-[90vh] overflow-hidden rounded-lg border bg-white shadow-elevated',
           sizeStyles[size],
           variantStyles[variant],
         )}
       >
         {/* Header */}
         {(title || showCloseButton) && (
-          <div className="flex items-start justify-between p-6 border-b border-slate-200">
+          <div className="flex items-start justify-between border-b border-slate-200 p-4">
             <div className="min-w-0">
               {title && (
-                <h2 className="text-xl font-semibold text-slate-950">{title}</h2>
+                <h2 className="text-lg font-semibold text-slate-950">{title}</h2>
               )}
               {description && (
                 <p className="text-sm text-slate-600 mt-1">{description}</p>
@@ -95,22 +95,22 @@ export function ReusableModal({
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100 transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-slate-100"
               >
-                <span className="text-slate-400 text-xl">×</span>
+                <span className="text-slate-400 text-lg">×</span>
               </button>
             )}
           </div>
         )}
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+        <div className="max-h-[calc(90vh-200px)] overflow-y-auto p-4">
           {children}
         </div>
 
         {/* Footer */}
         {(footer || actions) && (
-          <div className="flex items-center justify-between p-6 border-t border-slate-200 bg-slate-50">
+          <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 p-4">
             <div>{footer}</div>
             <div className="flex gap-3">
               {actions}
@@ -120,15 +120,4 @@ export function ReusableModal({
       </div>
     </div>
   )
-}
-
-// Modal trigger hook
-export function useModal() {
-  const [isOpen, setIsOpen] = React.useState(false)
-
-  const open = () => setIsOpen(true)
-  const close = () => setIsOpen(false)
-  const toggle = () => setIsOpen(prev => !prev)
-
-  return { isOpen, open, close, toggle }
 }

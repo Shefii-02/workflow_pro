@@ -1,9 +1,9 @@
 import { Suspense, useEffect } from 'react'
-import { useMatches, useRoutes } from 'react-router-dom'
+import { matchRoutes, useLocation, useRoutes } from 'react-router-dom'
 import { useTokenRefresh, useSessionExpiry } from './hooks/useAuth'
 import { useSessionTracker } from './hooks/useSessionTracker'
 import { AuthErrorBoundary } from './auth/components/AuthErrorBoundary'
-import { useConfirmDialog } from './shared/components'
+import { LoadingScreen, useConfirmDialog } from './shared/components'
 import { appRoutes } from './routes/routeConfig'
 
 function AppContent() {
@@ -11,7 +11,8 @@ function AppContent() {
   useSessionExpiry()
 
   const { confirm } = useConfirmDialog()
-  const matches = useMatches()
+  const location = useLocation()
+  const { pathname } = location
 
   useSessionTracker({
     timeoutMinutes: 60,
@@ -40,19 +41,19 @@ function AppContent() {
   })
 
   useEffect(() => {
-    const title = matches
-      .map((match) => (match.handle as { title?: string } | undefined)?.title)
+    const title = matchRoutes(appRoutes, location)
+      ?.map((match) => (match.route.handle as { title?: string } | undefined)?.title)
       .filter((value): value is string => Boolean(value))
       .reverse()[0]
 
     if (title) {
       document.title = title
     }
-  }, [matches])
+  }, [location, pathname])
 
   const routing = useRoutes(appRoutes)
 
-  return <Suspense fallback={<div>Loading...</div>}>{routing}</Suspense>
+  return <Suspense fallback={<LoadingScreen message="Loading workspace..." />}>{routing}</Suspense>
 }
 
 export default function App() {

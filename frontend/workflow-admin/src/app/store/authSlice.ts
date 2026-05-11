@@ -1,15 +1,28 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
+import { isAxiosError } from 'axios'
 import { authService } from '../../shared/services'
 import type { AuthCredentials, AuthResponse, AuthState, User } from '../../shared/types'
 import { Storage } from '../../shared/utils/helpers'
 import { STORAGE_KEYS } from '../../shared/constants'
 
+function getThunkErrorMessage(error: unknown, fallback: string) {
+  if (isAxiosError<{ message?: string }>(error)) {
+    return error.response?.data?.message || fallback
+  }
+
+  if (error instanceof Error) {
+    return error.message || fallback
+  }
+
+  return fallback
+}
+
 const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
-  token: Storage.get(STORAGE_KEYS.AUTH_TOKEN) || null,
-  refreshToken: Storage.get(STORAGE_KEYS.REFRESH_TOKEN) || null,
+  token: Storage.get<string>(STORAGE_KEYS.AUTH_TOKEN) || null,
+  refreshToken: Storage.get<string>(STORAGE_KEYS.REFRESH_TOKEN) || null,
   status: 'idle',
   error: null,
 }
@@ -23,8 +36,8 @@ export const loginAsync = createAsyncThunk<AuthResponse, AuthCredentials, { reje
       Storage.set(STORAGE_KEYS.REFRESH_TOKEN, response.refreshToken)
       Storage.set(STORAGE_KEYS.USER, response.user)
       return response
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Login failed')
+    } catch (error: unknown) {
+      return rejectWithValue(getThunkErrorMessage(error, 'Login failed'))
     }
   },
 )
@@ -40,8 +53,8 @@ export const registerAsync = createAsyncThunk<
     Storage.set(STORAGE_KEYS.REFRESH_TOKEN, response.refreshToken)
     Storage.set(STORAGE_KEYS.USER, response.user)
     return response
-  } catch (error: any) {
-    return rejectWithValue(error.response?.data?.message || 'Registration failed')
+  } catch (error: unknown) {
+    return rejectWithValue(getThunkErrorMessage(error, 'Registration failed'))
   }
 })
 
@@ -52,8 +65,8 @@ export const getCurrentUserAsync = createAsyncThunk<User, void, { rejectValue: s
       const user = await authService.getCurrentUser()
       Storage.set(STORAGE_KEYS.USER, user)
       return user
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch user')
+    } catch (error: unknown) {
+      return rejectWithValue(getThunkErrorMessage(error, 'Failed to fetch user'))
     }
   },
 )
@@ -68,8 +81,8 @@ export const refreshTokenAsync = createAsyncThunk<
     Storage.set(STORAGE_KEYS.AUTH_TOKEN, response.token)
     Storage.set(STORAGE_KEYS.REFRESH_TOKEN, response.refreshToken)
     return response
-  } catch (error: any) {
-    return rejectWithValue(error.response?.data?.message || 'Token refresh failed')
+  } catch (error: unknown) {
+    return rejectWithValue(getThunkErrorMessage(error, 'Token refresh failed'))
   }
 })
 

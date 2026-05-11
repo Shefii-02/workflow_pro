@@ -1,9 +1,62 @@
 import apiClient from './api-client'
-import type { AuthCredentials, AuthResponse, User, ApiResponse } from '../types'
+import type {
+  ApiResponse,
+  AuthCredentials,
+  AuthResponse,
+  Company,
+  PaginationParams,
+  Project,
+  Task,
+  User,
+} from '../types'
 import { mockUsers } from '../utils/mock-data'
+
+export { apiCache, createApiCacheKey } from './api-cache'
+export type { ApiCacheEntry, ApiCacheOptions } from './api-cache'
 
 // Mock Auth Service - validates against mock users
 const MOCK_PASSWORD = 'password123'
+
+type QueryParams = Partial<PaginationParams> & Record<string, string | number | boolean | undefined>
+type EntityMutation<T extends { id: string; createdAt: string; updatedAt: string }> = Partial<
+  Omit<T, 'id' | 'createdAt' | 'updatedAt'>
+>
+
+function getResponseData<T>(response: { data: ApiResponse<T> }): T {
+  if (response.data.data === undefined) {
+    throw new Error(response.data.error || response.data.message || 'API response did not include data')
+  }
+
+  return response.data.data
+}
+
+function createEntityService<T extends { id: string; createdAt: string; updatedAt: string }>(resourcePath: string) {
+  return {
+    getMany: async (params?: QueryParams): Promise<T[]> => {
+      const response = await apiClient.get<ApiResponse<T[]>>(resourcePath, { params })
+      return getResponseData(response)
+    },
+
+    getOne: async (id: string): Promise<T> => {
+      const response = await apiClient.get<ApiResponse<T>>(`${resourcePath}/${id}`)
+      return getResponseData(response)
+    },
+
+    create: async (data: EntityMutation<T>): Promise<T> => {
+      const response = await apiClient.post<ApiResponse<T>>(resourcePath, data)
+      return getResponseData(response)
+    },
+
+    update: async (id: string, data: EntityMutation<T>): Promise<T> => {
+      const response = await apiClient.patch<ApiResponse<T>>(`${resourcePath}/${id}`, data)
+      return getResponseData(response)
+    },
+
+    delete: async (id: string): Promise<void> => {
+      await apiClient.delete(`${resourcePath}/${id}`)
+    },
+  }
+}
 
 const createAuthResponse = (user: User): AuthResponse => ({
   user,
@@ -34,7 +87,7 @@ export const authService = {
 
   register: async (userData: Partial<User> & { password: string }): Promise<AuthResponse> => {
     const response = await apiClient.post<ApiResponse<AuthResponse>>('/auth/register', userData)
-    return response.data.data!
+    return getResponseData(response)
   },
 
   logout: async (): Promise<void> => {
@@ -46,19 +99,19 @@ export const authService = {
     const response = await apiClient.post<ApiResponse<AuthResponse>>('/auth/refresh', {
       refreshToken,
     })
-    return response.data.data!
+    return getResponseData(response)
   },
 
   getCurrentUser: async (): Promise<User> => {
     const response = await apiClient.get<ApiResponse<User>>('/auth/me')
-    return response.data.data!
+    return getResponseData(response)
   },
 
   forgotPassword: async (email: string): Promise<{ message: string }> => {
     const response = await apiClient.post<ApiResponse<{ message: string }>>('/auth/forgot-password', {
       email,
     })
-    return response.data.data!
+    return getResponseData(response)
   },
 
   resetPassword: async (token: string, newPassword: string): Promise<{ message: string }> => {
@@ -66,24 +119,24 @@ export const authService = {
       token,
       newPassword,
     })
-    return response.data.data!
+    return getResponseData(response)
   },
 }
 
 export const userService = {
   getUser: async (id: string): Promise<User> => {
     const response = await apiClient.get<ApiResponse<User>>(`/users/${id}`)
-    return response.data.data!
+    return getResponseData(response)
   },
 
   updateUser: async (id: string, userData: Partial<User>): Promise<User> => {
     const response = await apiClient.patch<ApiResponse<User>>(`/users/${id}`, userData)
-    return response.data.data!
+    return getResponseData(response)
   },
 
   updateProfile: async (profileData: Partial<User>): Promise<User> => {
     const response = await apiClient.patch<ApiResponse<User>>('/users/profile', profileData)
-    return response.data.data!
+    return getResponseData(response)
   },
 
   changePassword: async (oldPassword: string, newPassword: string): Promise<{ message: string }> => {
@@ -91,89 +144,51 @@ export const userService = {
       oldPassword,
       newPassword,
     })
-    return response.data.data!
+    return getResponseData(response)
   },
 
   deleteAccount: async (): Promise<{ message: string }> => {
     const response = await apiClient.delete<ApiResponse<{ message: string }>>('/users/account')
-    return response.data.data!
+    return getResponseData(response)
   },
 }
 
+const companiesApi = createEntityService<Company>('/companies')
+const projectsApi = createEntityService<Project>('/projects')
+const tasksApi = createEntityService<Task>('/tasks')
+
 export const companyService = {
-  getCompanies: async (params?: any) => {
-    const response = await apiClient.get('/companies', { params })
-    return response.data.data
-  },
+  getCompanies: companiesApi.getMany,
 
-  getCompany: async (id: string) => {
-    const response = await apiClient.get(`/companies/${id}`)
-    return response.data.data
-  },
+  getCompany: companiesApi.getOne,
 
-  createCompany: async (data: any) => {
-    const response = await apiClient.post('/companies', data)
-    return response.data.data
-  },
+  createCompany: companiesApi.create,
 
-  updateCompany: async (id: string, data: any) => {
-    const response = await apiClient.patch(`/companies/${id}`, data)
-    return response.data.data
-  },
+  updateCompany: companiesApi.update,
 
-  deleteCompany: async (id: string) => {
-    await apiClient.delete(`/companies/${id}`)
-  },
+  deleteCompany: companiesApi.delete,
 }
 
 export const projectService = {
-  getProjects: async (params?: any) => {
-    const response = await apiClient.get('/projects', { params })
-    return response.data.data
-  },
+  getProjects: projectsApi.getMany,
 
-  getProject: async (id: string) => {
-    const response = await apiClient.get(`/projects/${id}`)
-    return response.data.data
-  },
+  getProject: projectsApi.getOne,
 
-  createProject: async (data: any) => {
-    const response = await apiClient.post('/projects', data)
-    return response.data.data
-  },
+  createProject: projectsApi.create,
 
-  updateProject: async (id: string, data: any) => {
-    const response = await apiClient.patch(`/projects/${id}`, data)
-    return response.data.data
-  },
+  updateProject: projectsApi.update,
 
-  deleteProject: async (id: string) => {
-    await apiClient.delete(`/projects/${id}`)
-  },
+  deleteProject: projectsApi.delete,
 }
 
 export const taskService = {
-  getTasks: async (params?: any) => {
-    const response = await apiClient.get('/tasks', { params })
-    return response.data.data
-  },
+  getTasks: tasksApi.getMany,
 
-  getTask: async (id: string) => {
-    const response = await apiClient.get(`/tasks/${id}`)
-    return response.data.data
-  },
+  getTask: tasksApi.getOne,
 
-  createTask: async (data: any) => {
-    const response = await apiClient.post('/tasks', data)
-    return response.data.data
-  },
+  createTask: tasksApi.create,
 
-  updateTask: async (id: string, data: any) => {
-    const response = await apiClient.patch(`/tasks/${id}`, data)
-    return response.data.data
-  },
+  updateTask: tasksApi.update,
 
-  deleteTask: async (id: string) => {
-    await apiClient.delete(`/tasks/${id}`)
-  },
+  deleteTask: tasksApi.delete,
 }

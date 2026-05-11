@@ -2,13 +2,13 @@ import * as React from 'react'
 import { cn } from '../../shared/utils/helpers'
 
 // Card
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
+export type CardProps = React.HTMLAttributes<HTMLDivElement>
 
 export function Card({ className, children, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        'rounded-3xl border border-border bg-surface p-6 shadow-card transition-shadow duration-200 hover:shadow-elevated',
+        'rounded-lg border border-border bg-surface p-4 shadow-card',
         className,
       )}
       {...props}
@@ -26,12 +26,12 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 export function Badge({ className, variant = 'default', size = 'sm', children, ...props }: BadgeProps) {
   const variantStyles = {
-    default: 'bg-gray-100 text-gray-900',
-    success: 'bg-green-100 text-green-900',
-    warning: 'bg-yellow-100 text-yellow-900',
-    danger: 'bg-red-100 text-red-900',
-    info: 'bg-blue-100 text-blue-900',
-    primary: 'bg-brand-100 text-brand-900',
+    default: 'border-slate-200 bg-slate-50 text-slate-700',
+    success: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    warning: 'border-amber-200 bg-amber-50 text-amber-700',
+    danger: 'border-rose-200 bg-rose-50 text-rose-700',
+    info: 'border-sky-200 bg-sky-50 text-sky-700',
+    primary: 'border-brand-200 bg-brand-50 text-brand-700',
   }
 
   const sizeStyles = {
@@ -41,7 +41,7 @@ export function Badge({ className, variant = 'default', size = 'sm', children, .
 
   return (
     <span
-      className={cn('inline-flex items-center font-medium rounded-full', variantStyles[variant], sizeStyles[size], className)}
+      className={cn('inline-flex items-center rounded-md border font-medium', variantStyles[variant], sizeStyles[size], className)}
       {...props}
     >
       {children}
@@ -145,10 +145,10 @@ export interface EmptyStateProps {
 
 export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-      {icon && <div className="mb-4 text-5xl opacity-50">{icon}</div>}
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-      {description && <p className="text-sm text-gray-600 mb-6 max-w-sm">{description}</p>}
+    <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
+      {icon && <div className="mb-3 text-3xl opacity-60">{icon}</div>}
+      <h3 className="mb-1 text-sm font-semibold text-gray-900">{title}</h3>
+      {description && <p className="mb-4 max-w-sm text-sm text-gray-600">{description}</p>}
       {action && <div>{action}</div>}
     </div>
   )

@@ -79,24 +79,24 @@ export function isValidEmail(email: string): boolean {
 }
 
 // Debounce
-export function debounce<T extends (...args: any[]) => any>(
-  fn: T,
+export function debounce<TArgs extends unknown[]>(
+  fn: (...args: TArgs) => void,
   delay: number,
-): (...args: Parameters<T>) => void {
+): (...args: TArgs) => void {
   let timeoutId: ReturnType<typeof setTimeout>
-  return function (...args: Parameters<T>) {
+  return function (...args: TArgs) {
     clearTimeout(timeoutId)
     timeoutId = setTimeout(() => fn(...args), delay)
   }
 }
 
 // Throttle
-export function throttle<T extends (...args: any[]) => any>(
-  fn: T,
+export function throttle<TArgs extends unknown[]>(
+  fn: (...args: TArgs) => void,
   limit: number,
-): (...args: Parameters<T>) => void {
+): (...args: TArgs) => void {
   let lastRun = 0
-  return function (...args: Parameters<T>) {
+  return function (...args: TArgs) {
     const now = Date.now()
     if (now - lastRun >= limit) {
       fn(...args)
@@ -116,7 +116,7 @@ export function generateId(): string {
 }
 
 // Check if value is empty
-export function isEmpty(value: any): boolean {
+export function isEmpty(value: unknown): boolean {
   if (value === null || value === undefined) return true
   if (typeof value === 'string') return value.trim().length === 0
   if (Array.isArray(value)) return value.length === 0
@@ -174,7 +174,7 @@ export function filterBy<T>(arr: T[], conditions: Partial<T>): T[] {
 
 // Storage utilities
 export const Storage = {
-  get: (key: string) => {
+  get: <T = unknown>(key: string): T | null => {
     try {
       const item = localStorage.getItem(key)
       return item ? JSON.parse(item) : null
@@ -182,7 +182,7 @@ export const Storage = {
       return null
     }
   },
-  set: (key: string, value: any) => {
+  set: (key: string, value: unknown) => {
     try {
       localStorage.setItem(key, JSON.stringify(value))
     } catch {

@@ -18,10 +18,10 @@ const maxWidthStyles = {
 
 const paddingStyles = {
   none: '',
-  sm: 'px-4 py-6',
-  md: 'px-6 py-8',
-  lg: 'px-8 py-12',
-  xl: 'px-12 py-16',
+  sm: 'px-4 py-4',
+  md: 'px-5 py-5',
+  lg: 'px-6 py-6',
+  xl: 'px-6 py-8',
 }
 
 export function PageContainer({

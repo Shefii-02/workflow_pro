@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppSelector } from '../../app/store/hooks'
 import type { Permission, AccountType } from '../types'
+export { useCachedApiQuery } from './useCachedApiQuery'
 
 // Use Auth
 export function useAuth() {
@@ -132,6 +133,18 @@ export function useToggle(initialValue: boolean = false): [boolean, () => void, 
   }, [])
 
   return [value, toggle, setValueDirect]
+}
+
+export function useStableCallback<TArgs extends unknown[], TResult>(
+  callback: (...args: TArgs) => TResult,
+) {
+  const callbackRef = useRef(callback)
+
+  useEffect(() => {
+    callbackRef.current = callback
+  }, [callback])
+
+  return useCallback((...args: TArgs) => callbackRef.current(...args), [])
 }
 
 // Use async

@@ -79,10 +79,10 @@ export function AnalyticsCard({
         <div className="space-y-4">
           <Skeleton className="h-6 w-3/4" />
           <div className="grid gap-4 sm:grid-cols-2">
-            <Skeleton className="h-20 rounded-3xl" />
-            <Skeleton className="h-20 rounded-3xl" />
+            <Skeleton className="h-20 rounded-lg" />
+            <Skeleton className="h-20 rounded-lg" />
           </div>
-          {chart && <Skeleton className="h-64 rounded-3xl" />}
+          {chart && <Skeleton className="h-64 rounded-lg" />}
         </div>
       </Card>
     )
@@ -122,7 +122,7 @@ export function AnalyticsCard({
             <div
               key={index}
               className={cn(
-                'rounded-3xl p-4 border border-slate-200 bg-slate-50/50',
+                'rounded-lg p-4 border border-slate-200 bg-slate-50/50',
                 variant === 'detailed' && 'p-6'
               )}
             >
@@ -131,7 +131,7 @@ export function AnalyticsCard({
                   <p className="text-sm font-semibold text-slate-500 uppercase tracking-[0.15em]">
                     {metric.label}
                   </p>
-                  <p className="mt-2 text-2xl font-bold text-slate-950">
+                  <p className="mt-2 text-xl font-bold text-slate-950">
                     {formatValue(metric.value, metric.format)}
                   </p>
                   {metric.change && (
@@ -148,7 +148,7 @@ export function AnalyticsCard({
                 </div>
                 {metric.icon && (
                   <div className={cn(
-                    'inline-flex h-10 w-10 items-center justify-center rounded-3xl text-lg shadow-sm ring-1',
+                    'inline-flex h-10 w-10 items-center justify-center rounded-lg text-lg shadow-sm ring-1',
                     metric.color ? metricColors[metric.color] : metricColors.neutral
                   )}>
                     {metric.icon}

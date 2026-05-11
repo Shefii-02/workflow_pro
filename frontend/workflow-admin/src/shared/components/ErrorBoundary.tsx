@@ -49,7 +49,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         <Card className="p-8 text-center">
           <div className="mb-6">
             <div className="text-6xl mb-4">⚠️</div>
-            <h2 className="text-xl font-semibold text-slate-950 mb-2">Something went wrong</h2>
+            <h2 className="text-lg font-semibold text-slate-950 mb-2">Something went wrong</h2>
             <p className="text-slate-600">
               We encountered an unexpected error. Please try refreshing the page or contact support if the problem persists.
             </p>

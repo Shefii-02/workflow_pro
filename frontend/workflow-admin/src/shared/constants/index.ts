@@ -23,6 +23,7 @@ export const ROUTES = {
   SP_PERMISSIONS: '/sp/permissions',
   SP_SUPPORT: '/sp/support',
   SP_FINANCE: '/sp/finance',
+  SP_CHAT: '/sp/chat',
   SP_ACTIVITIES: '/sp/activities',
   SP_MONITORING: '/sp/monitoring',
   SP_ANNOUNCEMENTS: '/sp/announcements',

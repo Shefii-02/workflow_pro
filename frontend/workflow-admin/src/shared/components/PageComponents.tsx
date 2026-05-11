@@ -14,7 +14,7 @@ export interface PageHeaderProps {
 
 export function PageHeader({ title, description, action, actions, breadcrumb, children }: PageHeaderProps) {
   return (
-    <div className="mb-8 space-y-4">
+    <div className="mb-5 space-y-3">
       {breadcrumb && (
         <div className="flex gap-2 text-sm text-gray-600">
           {breadcrumb.map((item, idx) => (
@@ -31,10 +31,10 @@ export function PageHeader({ title, description, action, actions, breadcrumb, ch
           ))}
         </div>
       )}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-          {description && <p className="mt-2 text-gray-600">{description}</p>}
+          <h1 className="text-lg font-semibold text-gray-950">{title}</h1>
+          {description && <p className="mt-1 text-sm text-gray-600">{description}</p>}
         </div>
         {(action || actions) && <div>{action || actions}</div>}
       </div>
@@ -65,18 +65,18 @@ const statVariantClasses: Record<NonNullable<StatCardProps['variant']>, string> 
 
 export function StatCard({ label, value, change, unit, icon, description, variant = 'neutral' }: StatCardProps) {
   return (
-    <Card className="hover:shadow-lg transition-shadow border border-border">
-      <div className="flex items-start justify-between gap-4">
+    <Card>
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-slate-500 uppercase tracking-[0.15em]">{label}</p>
-          <div className="mt-3 flex items-baseline gap-2">
-            <p className="text-3xl font-semibold text-slate-950">{value}</p>
+          <p className="text-xs font-medium uppercase text-slate-500">{label}</p>
+          <div className="mt-2 flex items-baseline gap-2">
+            <p className="text-xl font-semibold text-slate-950">{value}</p>
             {unit && <span className="text-sm text-slate-500">{unit}</span>}
           </div>
-          {description && <p className="mt-2 text-sm text-slate-500">{description}</p>}
+          {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
           {change && (
             <p className={cn(
-              'mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium',
+              'mt-2 inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-medium',
               change.type === 'increase' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700',
             )}
           >
@@ -86,7 +86,7 @@ export function StatCard({ label, value, change, unit, icon, description, varian
         </div>
         {icon && (
           <div className={cn(
-            'inline-flex h-12 w-12 items-center justify-center rounded-3xl text-xl shadow-sm ring-1',
+            'inline-flex h-9 w-9 items-center justify-center rounded-md text-base ring-1',
             statVariantClasses[variant],
           )}>
             {icon}
@@ -116,17 +116,17 @@ const progressAccentClasses: Record<NonNullable<ProgressWidgetCardProps['accent'
 
 export function ProgressWidgetCard({ title, value, progress, description, label, accent = 'brand' }: ProgressWidgetCardProps) {
   return (
-    <Card className="hover:shadow-lg transition-shadow border border-border">
-      <div className="flex items-center justify-between gap-4">
+    <Card>
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-slate-500 uppercase tracking-[0.15em]">{title}</p>
-          <p className="mt-3 text-3xl font-semibold text-slate-950">{value}</p>
-          {description && <p className="mt-2 text-sm text-slate-500">{description}</p>}
+          <p className="text-xs font-medium uppercase text-slate-500">{title}</p>
+          <p className="mt-2 text-xl font-semibold text-slate-950">{value}</p>
+          {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
         </div>
-        {label && <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">{label}</span>}
+        {label && <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium uppercase text-slate-600">{label}</span>}
       </div>
-      <div className="mt-5 grid gap-3">
-        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+      <div className="mt-4 grid gap-2">
+        <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
           <div className={cn('h-full rounded-full transition-all duration-300', progressAccentClasses[accent])} style={{ width: `${progress}%` }}></div>
         </div>
         <div className="flex items-center justify-between text-xs text-slate-500">
@@ -164,24 +164,24 @@ export function AnalyticsChartCard({
 }: AnalyticsChartCardProps) {
   return (
     <Card>
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+      <div className="mb-3">
+        <h3 className="text-base font-semibold text-gray-950">{title}</h3>
         {description && <p className="mt-1 text-sm text-gray-600">{description}</p>}
       </div>
-      <div className="mt-6 min-h-[320px]">
+      <div className="mt-4 min-h-[280px]">
         {isLoading ? (
           <div className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
               <Skeleton className="h-5 w-3/4" />
               <Skeleton className="h-5 w-1/2" />
             </div>
-            <div className="h-[280px] rounded-3xl bg-slate-100 overflow-hidden">
+            <div className="h-[240px] overflow-hidden rounded-lg bg-slate-100">
               <div className="h-full w-full animate-pulse bg-slate-200" />
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
-              <Skeleton className="h-12 rounded-3xl" />
-              <Skeleton className="h-12 rounded-3xl" />
-              <Skeleton className="h-12 rounded-3xl" />
+              <Skeleton className="h-10 rounded-lg" />
+              <Skeleton className="h-10 rounded-lg" />
+              <Skeleton className="h-10 rounded-lg" />
             </div>
           </div>
         ) : isEmpty ? (
@@ -195,7 +195,7 @@ export function AnalyticsChartCard({
           chart
         )}
       </div>
-      {footer && <div className="mt-6 border-t border-gray-200 pt-6">{footer}</div>}
+      {footer && <div className="mt-4 border-t border-gray-200 pt-4">{footer}</div>}
     </Card>
   )
 }
@@ -219,10 +219,10 @@ export function DataTableHeader({
   actions,
 }: DataTableHeaderProps) {
   return (
-    <div className="space-y-4 mb-6">
+    <div className="mb-4 space-y-3">
       {(title || description) && (
         <div>
-          {title && <h2 className="text-xl font-semibold text-gray-900">{title}</h2>}
+          {title && <h2 className="text-base font-semibold text-gray-950">{title}</h2>}
           {description && <p className="mt-1 text-sm text-gray-600">{description}</p>}
         </div>
       )}
@@ -233,7 +233,7 @@ export function DataTableHeader({
               type="text"
               placeholder={searchPlaceholder || 'Search...'}
               onChange={(e) => onSearch(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="h-9 w-full rounded-md border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-100"
             />
           )}
         </div>
@@ -265,7 +265,7 @@ export function DataTablePagination({
   const end = Math.min(page * pageSize, total)
 
   return (
-    <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-gray-200 pt-6">
+    <div className="mt-3 flex flex-col gap-3 border-t border-gray-200 pt-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="text-sm text-gray-600">
         Showing {start} to {end} of {total} results
       </div>
@@ -273,7 +273,7 @@ export function DataTablePagination({
         <select
           value={pageSize}
           onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          className="rounded border border-gray-300 px-2 py-1 text-sm"
+          className="h-8 rounded-md border border-gray-300 px-2 text-sm"
         >
           <option value="10">10 per page</option>
           <option value="20">20 per page</option>
@@ -284,7 +284,7 @@ export function DataTablePagination({
           <button
             onClick={() => onPageChange(Math.max(1, page - 1))}
             disabled={page === 1}
-            className="rounded border border-gray-300 px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-50"
+            className="h-8 rounded-md border border-gray-300 px-3 text-sm hover:bg-gray-50 disabled:opacity-50"
           >
             Previous
           </button>
@@ -296,7 +296,7 @@ export function DataTablePagination({
           <button
             onClick={() => onPageChange(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
-            className="rounded border border-gray-300 px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-50"
+            className="h-8 rounded-md border border-gray-300 px-3 text-sm hover:bg-gray-50 disabled:opacity-50"
           >
             Next
           </button>

@@ -4,7 +4,7 @@ import { Breadcrumbs } from './Breadcrumbs'
 import { cn, Storage } from '../utils/helpers'
 import type { SidebarItem } from '../types'
 import { STORAGE_KEYS } from '../constants'
-import { usePermissions } from '../hooks'
+import { usePermissions, useStableCallback } from '../hooks'
 
 interface SidebarProps {
   items: SidebarItem[]
@@ -19,7 +19,39 @@ interface SidebarProps {
   onCloseMobile?: () => void
 }
 
-export function Sidebar({
+function filterSidebarItems(
+  items: SidebarItem[],
+  hasAnyPermission: (permissions: NonNullable<SidebarItem['permissions']>) => boolean,
+): SidebarItem[] {
+  return items
+    .map((item) => {
+      const allowed = !item.permissions || item.permissions.length === 0 || hasAnyPermission(item.permissions)
+      if (!allowed) return null
+
+      const children = item.children ? filterSidebarItems(item.children, hasAnyPermission) : undefined
+      if (item.children && (!children || children.length === 0)) {
+        return { ...item, children: undefined }
+      }
+
+      return { ...item, children }
+    })
+    .filter(Boolean) as SidebarItem[]
+}
+
+function getActiveSidebarParentIds(
+  item: SidebarItem,
+  isActive: (path: string) => boolean,
+  parents: string[] = [],
+): string[] {
+  const itemActive = isActive(item.path)
+  const childIds = item.children?.flatMap((child) => getActiveSidebarParentIds(child, isActive, [...parents, item.id])) ?? []
+  if (itemActive) {
+    return parents
+  }
+  return childIds
+}
+
+export const Sidebar = React.memo(function Sidebar({
   items,
   branding,
   isOpen = true,
@@ -45,52 +77,27 @@ export function Sidebar({
     [location.pathname, normalizePath],
   )
 
-  const filterItems = useCallback(
-    (items: SidebarItem[]): SidebarItem[] =>
-      items
-        .map((item) => {
-          const allowed = !item.permissions || item.permissions.length === 0 || hasAnyPermission(item.permissions)
-          if (!allowed) return null
+  const filteredItems = useMemo(() => filterSidebarItems(items, hasAnyPermission), [items, hasAnyPermission])
 
-          const children = item.children ? filterItems(item.children) : undefined
-          if (item.children && (!children || children.length === 0)) {
-            return { ...item, children: undefined }
-          }
-
-          return { ...item, children }
-        })
-        .filter(Boolean) as SidebarItem[],
-    [hasAnyPermission],
+  const activeParentIds = useMemo(
+    () => filteredItems.flatMap((item) => getActiveSidebarParentIds(item, isActive)),
+    [filteredItems, isActive],
   )
 
-  const filteredItems = useMemo(() => filterItems(items), [items, filterItems])
-
-  const getActiveParentIds = useCallback(
-    (item: SidebarItem, parents: string[] = []): string[] => {
-      const itemActive = isActive(item.path)
-      const childIds = item.children?.flatMap((child) => getActiveParentIds(child, [...parents, item.id])) ?? []
-      if (itemActive) {
-        return parents
-      }
-      return childIds
-    },
-    [isActive],
+  const visibleExpandedItems = useMemo(
+    () => new Set([...expandedItems, ...activeParentIds]),
+    [activeParentIds, expandedItems],
   )
 
-  useEffect(() => {
-    const activeParentIds = filteredItems.flatMap((item) => getActiveParentIds(item))
-    setExpandedItems((prev) => Array.from(new Set([...prev, ...activeParentIds])))
-  }, [filteredItems, getActiveParentIds])
-
-  const toggleExpand = (id: string) => {
+  const toggleExpand = useCallback((id: string) => {
     setExpandedItems((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     )
-  }
+  }, [])
 
-  const renderItem = (item: SidebarItem, level = 0) => {
+  function renderItem(item: SidebarItem, level = 0) {
     const hasChildren = item.children && item.children.length > 0
-    const expanded = expandedItems.includes(item.id)
+    const expanded = visibleExpandedItems.has(item.id)
     const active = isActive(item.path)
 
     return (
@@ -100,26 +107,24 @@ export function Sidebar({
           onClick={() => {
             if (hasChildren) {
               toggleExpand(item.id)
-            } else {
-              navigate(item.path)
-              onCloseMobile?.()
             }
+            navigate(item.path)
+            onCloseMobile?.()
           }}
           className={cn(
-            'group relative w-full rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 flex items-center justify-between gap-3 text-slate-700 hover:bg-slate-100/80 hover:shadow-sm',
+            'group relative flex w-full items-center justify-between gap-2 rounded-md px-2.5 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950',
             {
-              'bg-brand-50 text-brand-700 shadow-sm ring-1 ring-brand-100 hover:bg-brand-100/80': active && !hasChildren,
-              'pl-12': level > 0,
-              'ml-2 mr-2': level === 0,
+              'bg-slate-100 text-slate-950': active,
+              'pl-8': level > 0,
             },
           )}
         >
-          <span className="flex items-center gap-3 flex-1 min-w-0">
+          <span className="flex min-w-0 flex-1 items-center gap-2.5">
             <span className={cn(
-              'inline-flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition-colors group-hover:bg-slate-200',
+              'inline-flex h-7 w-7 items-center justify-center rounded-md bg-transparent text-slate-500 transition-colors group-hover:text-slate-900',
               {
-                'bg-brand-100 text-brand-700 group-hover:bg-brand-200': active,
-                'h-8 w-8': level > 0,
+                'text-slate-950': active,
+                'h-6 w-6': level > 0,
               }
             )}>
               {item.icon}
@@ -159,7 +164,7 @@ export function Sidebar({
         </button>
 
         {hasChildren && expanded && (
-          <div className="ml-6 mt-1 space-y-1 border-l border-slate-200 pl-4">
+          <div className="ml-3 mt-1 space-y-1 border-l border-slate-200 pl-2">
             {item.children?.map((child) => renderItem(child, level + 1))}
           </div>
         )}
@@ -172,33 +177,33 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        'fixed inset-y-0 left-0 z-50 flex h-full flex-col overflow-hidden border-r border-slate-200/80 bg-white/95 backdrop-blur-xl shadow-xl transition-all duration-300 lg:static lg:h-auto lg:shadow-none lg:backdrop-blur-none',
+        'fixed inset-y-0 left-0 z-50 flex h-full flex-col overflow-hidden border-r border-slate-200 bg-white shadow-elevated transition-all duration-200 lg:static lg:h-auto lg:shadow-none',
         sidebarVisibility,
         {
-          'w-72': isOpen,
+          'w-64': isOpen,
           'w-20': !isOpen,
         },
       )}
     >
-      <div className="sticky top-0 z-20 border-b border-slate-200/60 bg-white/80 px-6 py-5 backdrop-blur-sm">
+      <div className="sticky top-0 z-20 border-b border-slate-200 bg-white px-3 py-3">
         <div className={cn('flex items-center justify-between gap-3', { 'justify-center': !isOpen })}>
           <div className={cn('flex items-center gap-3 min-w-0', { 'justify-center': !isOpen })}>
             {branding?.logo && (
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 text-xl text-white shadow-sm">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-slate-950 text-sm text-white">
                 {branding.logo}
               </div>
             )}
             {isOpen && (
               <div className="min-w-0">
-                <p className="truncate text-lg font-bold text-slate-900">{branding?.name}</p>
-                <p className="truncate text-xs text-slate-500 font-medium">{branding?.tagline}</p>
+                <p className="truncate text-sm font-semibold text-slate-950">{branding?.name}</p>
+                <p className="truncate text-xs font-medium text-slate-500">{branding?.tagline}</p>
               </div>
             )}
           </div>
           <button
             type="button"
             onClick={() => (isMobileOpen ? onCloseMobile?.() : onToggle?.(!isOpen))}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-all hover:bg-slate-50 hover:shadow-sm focus:ring-2 focus:ring-brand-200"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-950 focus:ring-2 focus:ring-brand-100"
           >
             {isMobileOpen ? (
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -217,14 +222,14 @@ export function Sidebar({
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="space-y-2">
-          {items.map((item) => renderItem(item))}
+      <nav className="flex-1 overflow-y-auto px-2 py-3">
+        <div className="space-y-1">
+          {filteredItems.map((item) => renderItem(item))}
         </div>
       </nav>
 
-      <div className="border-t border-slate-200/60 bg-slate-50/50 px-6 py-4">
-        <div className={cn('rounded-xl bg-gradient-to-r from-slate-100 to-slate-50 p-4 shadow-sm', { 'text-center': !isOpen })}>
+      <div className="border-t border-slate-200 bg-slate-50 px-3 py-3">
+        <div className={cn('rounded-md border border-slate-200 bg-white p-3', { 'text-center': !isOpen })}>
           <p className="text-xs font-semibold text-slate-900">Workflow Insights</p>
           <p className={cn('mt-1 text-xs text-slate-600', { 'hidden': !isOpen })}>
             Keep your team aligned and projects moving forward.
@@ -233,7 +238,7 @@ export function Sidebar({
       </div>
     </aside>
   )
-}
+})
 
 // Main Layout
 export interface LayoutProps {
@@ -249,16 +254,19 @@ export interface LayoutProps {
   children: React.ReactNode
 }
 
-export function Layout({ sidebar, header, children }: LayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [mobileOpen, setMobileOpen] = useState(false)
+interface LayoutHeaderProps {
+  onToggleMobileMenu?: () => void
+  commandItems?: SidebarItem[]
+}
 
-  useEffect(() => {
+export function Layout({ sidebar, header, children }: LayoutProps) {
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
     const stored = Storage.get(STORAGE_KEYS.SIDEBAR_STATE)
-    if (typeof stored === 'boolean') {
-      setSidebarOpen(stored)
-    }
-  }, [])
+    return typeof stored === 'boolean' ? stored : true
+  })
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const openMobileMenu = useStableCallback(() => setMobileOpen(true))
+  const closeMobileMenu = useStableCallback(() => setMobileOpen(false))
 
   useEffect(() => {
     Storage.set(STORAGE_KEYS.SIDEBAR_STATE, sidebarOpen)
@@ -268,14 +276,14 @@ export function Layout({ sidebar, header, children }: LayoutProps) {
     if (!header || !React.isValidElement(header)) {
       return header
     }
-    return cloneElement(header as React.ReactElement<any>, {
-      onToggleMobileMenu: () => setMobileOpen(true),
+    return cloneElement(header as React.ReactElement<LayoutHeaderProps>, {
+      onToggleMobileMenu: openMobileMenu,
       commandItems: sidebar.items,
     })
-  }, [header, sidebar.items])
+  }, [header, openMobileMenu, sidebar.items])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100/50">
+    <div className="min-h-screen bg-slate-50">
       {/* Mobile overlay */}
       <div
         className={cn(
@@ -285,7 +293,7 @@ export function Layout({ sidebar, header, children }: LayoutProps) {
             'opacity-0 pointer-events-none': !mobileOpen,
           },
         )}
-        onClick={() => setMobileOpen(false)}
+        onClick={closeMobileMenu}
       />
 
       <div className="relative flex min-h-screen">
@@ -295,7 +303,7 @@ export function Layout({ sidebar, header, children }: LayoutProps) {
           isOpen={sidebarOpen}
           isMobileOpen={mobileOpen}
           onToggle={setSidebarOpen}
-          onCloseMobile={() => setMobileOpen(false)}
+          onCloseMobile={closeMobileMenu}
         />
 
         <main
@@ -309,9 +317,9 @@ export function Layout({ sidebar, header, children }: LayoutProps) {
         >
           {enhancedHeader}
           <div className="flex-1">
-            <div className="mx-auto w-full max-w-[1800px] px-4 py-8 sm:px-6 lg:px-8 xl:px-12">
+            <div className="mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-5 lg:px-6">
               <Breadcrumbs items={sidebar.items} />
-              <div className="mt-6">
+              <div className="mt-4">
                 {children}
               </div>
             </div>

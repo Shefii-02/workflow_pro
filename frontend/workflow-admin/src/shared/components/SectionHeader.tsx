@@ -18,12 +18,12 @@ const sizeStyles = {
     spacing: 'space-y-2',
   },
   md: {
-    title: 'text-xl font-semibold',
+    title: 'text-lg font-semibold',
     description: 'text-sm',
     spacing: 'space-y-3',
   },
   lg: {
-    title: 'text-2xl font-bold',
+    title: 'text-xl font-bold',
     description: 'text-base',
     spacing: 'space-y-4',
   },

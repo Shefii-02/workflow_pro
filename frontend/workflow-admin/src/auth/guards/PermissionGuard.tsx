@@ -1,4 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom'
+import { hasAllowedAccess, hasRequiredAccess, normalizeAccessList } from '../utils/access-control'
 import type { UserRole, Permission } from '../../shared/types'
 import { useAppSelector } from '../../app/store/hooks'
 
@@ -9,7 +10,7 @@ interface RoleGuardProps {
 export function RoleGuard({ allowedRoles }: RoleGuardProps) {
   const user = useAppSelector((state) => state.auth.user)
 
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (!hasAllowedAccess(user?.role, allowedRoles)) {
     return <Navigate to="/unauthorized" replace />
   }
 
@@ -28,13 +29,9 @@ export function PermissionGuard({ requiredPermissions, requireAll = true }: Perm
     return <Navigate to="/login" replace />
   }
 
-  const permissions = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions]
+  const permissions = normalizeAccessList(requiredPermissions)
 
-  const hasPermission = requireAll
-    ? permissions.every((p) => user.permissions.includes(p))
-    : permissions.some((p) => user.permissions.includes(p))
-
-  if (!hasPermission) {
+  if (!hasRequiredAccess(user.permissions, permissions, requireAll)) {
     return <Navigate to="/unauthorized" replace />
   }
 

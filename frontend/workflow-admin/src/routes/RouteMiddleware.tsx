@@ -1,47 +1,68 @@
-import type { ReactNode } from 'react'
+import { memo, useMemo, type ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAppSelector } from '../app/store/hooks'
+import { hasAllowedAccess, hasRequiredAccess, normalizeAccessList } from '../auth/utils/access-control'
+import { ROUTES } from '../shared/constants'
 import type { AccountType, Permission, UserRole } from '../shared/types'
 
+const DEFAULT_AUTH_FALLBACK = ROUTES.LOGIN
+const DEFAULT_ACCESS_FALLBACK = ROUTES.UNAUTHORIZED
+
+function useCurrentUser() {
+  return useAppSelector((state) => state.auth.user)
+}
+
+function redirectTo(path: string) {
+  return <Navigate to={path} replace />
+}
+
 interface AccountTypeRouteProps {
-  allowedTypes: AccountType[]
+  allowedTypes: readonly AccountType[]
   fallback?: string
   children: ReactNode
 }
 
-export function AccountTypeRoute({ allowedTypes, fallback = '/unauthorized', children }: AccountTypeRouteProps) {
-  const user = useAppSelector((state) => state.auth.user)
+export const AccountTypeRoute = memo(function AccountTypeRoute({
+  allowedTypes,
+  fallback = DEFAULT_ACCESS_FALLBACK,
+  children,
+}: AccountTypeRouteProps) {
+  const user = useCurrentUser()
 
   if (!user) {
-    return <Navigate to="/login" replace />
+    return redirectTo(DEFAULT_AUTH_FALLBACK)
   }
 
-  if (!allowedTypes.includes(user.accountType)) {
-    return <Navigate to={fallback} replace />
+  if (!hasAllowedAccess(user.accountType, allowedTypes)) {
+    return redirectTo(fallback)
   }
 
   return <>{children}</>
-}
+})
 
 interface RoleRouteProps {
-  allowedRoles: UserRole[]
+  allowedRoles: readonly UserRole[]
   fallback?: string
   children: ReactNode
 }
 
-export function RoleRoute({ allowedRoles, fallback = '/unauthorized', children }: RoleRouteProps) {
-  const user = useAppSelector((state) => state.auth.user)
+export const RoleRoute = memo(function RoleRoute({
+  allowedRoles,
+  fallback = DEFAULT_ACCESS_FALLBACK,
+  children,
+}: RoleRouteProps) {
+  const user = useCurrentUser()
 
   if (!user) {
-    return <Navigate to="/login" replace />
+    return redirectTo(DEFAULT_AUTH_FALLBACK)
   }
 
-  if (!allowedRoles.includes(user.role)) {
-    return <Navigate to={fallback} replace />
+  if (!hasAllowedAccess(user.role, allowedRoles)) {
+    return redirectTo(fallback)
   }
 
   return <>{children}</>
-}
+})
 
 interface PermissionRouteProps {
   requiredPermissions: Permission | Permission[]
@@ -50,26 +71,25 @@ interface PermissionRouteProps {
   children: ReactNode
 }
 
-export function PermissionRoute({
+export const PermissionRoute = memo(function PermissionRoute({
   requiredPermissions,
   requireAll = true,
-  fallback = '/unauthorized',
+  fallback = DEFAULT_ACCESS_FALLBACK,
   children,
 }: PermissionRouteProps) {
-  const user = useAppSelector((state) => state.auth.user)
+  const user = useCurrentUser()
+  const permissions = useMemo(
+    () => normalizeAccessList(requiredPermissions),
+    [requiredPermissions],
+  )
 
   if (!user) {
-    return <Navigate to="/login" replace />
+    return redirectTo(DEFAULT_AUTH_FALLBACK)
   }
 
-  const permissions = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions]
-  const hasPermission = requireAll
-    ? permissions.every((permission) => user.permissions.includes(permission))
-    : permissions.some((permission) => user.permissions.includes(permission))
-
-  if (!hasPermission) {
-    return <Navigate to={fallback} replace />
+  if (!hasRequiredAccess(user.permissions, permissions, requireAll)) {
+    return redirectTo(fallback)
   }
 
   return <>{children}</>
-}
+})
