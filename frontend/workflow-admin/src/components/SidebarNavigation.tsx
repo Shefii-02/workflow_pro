@@ -1,11 +1,12 @@
 import { Home, LayoutDashboard, Settings, Sparkles, Users } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
+import { ROUTES } from '../shared/constants/routes'
 
 const navItems = [
-  { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { label: 'Analytics', path: '/analytics', icon: Sparkles },
-  { label: 'Team', path: '/team', icon: Users },
-  { label: 'Settings', path: '/settings', icon: Settings },
+  { label: 'Dashboard', path: ROUTES.ROOT, icon: LayoutDashboard },
+  { label: 'Analytics', path: ROUTES.ANALYTICS, icon: Sparkles },
+  { label: 'Team', path: ROUTES.TEAM, icon: Users },
+  { label: 'Settings', path: ROUTES.SETTINGS, icon: Settings },
 ]
 
 export function SidebarNavigation() {
@@ -26,7 +27,7 @@ export function SidebarNavigation() {
             <NavLink
               key={item.path}
               to={item.path}
-              end={item.path === '/'}
+              end={item.path === ROUTES.ROOT}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
                   isActive ? 'bg-brand-600 text-white shadow-soft' : 'text-slate-300 hover:bg-white/5 hover:text-white'

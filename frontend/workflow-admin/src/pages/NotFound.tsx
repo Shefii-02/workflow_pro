@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Button } from '../components/ui/button'
+import { ROUTES } from '../shared/constants/routes'
 
 export default function NotFound() {
   return (
@@ -8,7 +9,7 @@ export default function NotFound() {
         <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Page not found</p>
         <h1 className="mt-4 text-5xl font-semibold text-slate-950">404</h1>
         <p className="mt-4 text-base text-slate-600">Sorry, we couldn’t find the page you’re looking for.</p>
-        <Link to="/">
+        <Link to={ROUTES.ROOT}>
           <Button className="mt-8" variant="secondary">
             Return home
           </Button>

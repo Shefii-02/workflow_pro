@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { useAppDispatch, useAppSelector } from '../../app/store/hooks'
 import { loginAsync } from '../../app/store/authSlice'
 import { ACCOUNT_TYPE_ROUTES } from '../../shared/constants'
+import { ROUTES } from '../../shared/constants/routes'
 import { Button } from '../../shared/components/Button'
 import { Input } from '../../shared/components/Form'
 import { Card, Alert } from '../../shared/components/Card'
@@ -93,7 +94,7 @@ export default function LoginPage() {
                   <input type="checkbox" className="rounded" />
                   Keep me signed in
                 </label>
-                <a href="/forgot-password" className="text-sm text-brand-600 hover:text-brand-700">
+                <a href={ROUTES.FORGOT_PASSWORD} className="text-sm text-brand-600 hover:text-brand-700">
                   Forgot password?
                 </a>
               </div>
@@ -108,36 +109,9 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Demo credentials</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs text-gray-600 bg-gray-50 p-3 rounded-lg">
-              <div>
-                <p className="font-medium text-gray-900">SP Admin</p>
-                <p className="font-mono text-xs">admin@sp.com</p>
-                <p className="font-mono text-xs">password123</p>
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">Company Admin</p>
-                <p className="font-mono text-xs">admin@company.com</p>
-                <p className="font-mono text-xs">password123</p>
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">Freelancer</p>
-                <p className="font-mono text-xs">freelancer@email.com</p>
-                <p className="font-mono text-xs">password123</p>
-              </div>
-            </div>
-
             <div className="text-center text-sm text-gray-600">
               Don't have an account?{' '}
-              <a href="/register" className="text-brand-600 hover:text-brand-700 font-medium">
+              <a href={ROUTES.REGISTER} className="text-brand-600 hover:text-brand-700 font-medium">
                 Sign up
               </a>
             </div>

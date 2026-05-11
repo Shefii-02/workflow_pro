@@ -10,6 +10,7 @@ import { DropdownMenu } from '../../../shared/components/DropdownMenu'
 import { mockUsers } from '../../../shared/utils/mock-data'
 import type { User } from '../../../shared/types'
 import { AccountType, UserRole } from '../../../shared/types'
+import { ROUTES } from '../../../shared/constants/routes'
 
 const SPFreelancersPage: React.FC = () => {
   const navigate = useNavigate()
@@ -218,7 +219,7 @@ const SPFreelancersPage: React.FC = () => {
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Button onClick={() => navigate('/sp/freelancers/new')}>
+            <Button onClick={() => navigate(ROUTES.SP_FREELANCERS_NEW)}>
               <Plus className="w-4 h-4 mr-2" />
               Add Freelancer
             </Button>

@@ -9,6 +9,7 @@ import { Badge } from '../../../shared/components/Badge'
 import { DropdownMenu } from '../../../shared/components/DropdownMenu'
 import { mockProjects } from '../../../shared/utils/mock-data'
 import type { Project } from '../../../shared/types'
+import { ROUTES } from '../../../shared/constants/routes'
 
 const CompanyProjectsPage: React.FC = () => {
   const navigate = useNavigate()
@@ -176,7 +177,7 @@ const CompanyProjectsPage: React.FC = () => {
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Button onClick={() => navigate('/company/projects/new')}>
+            <Button onClick={() => navigate(ROUTES.COMPANY_PROJECTS_NEW)}>
               <Plus className="w-4 h-4 mr-2" />
               New Project
             </Button>

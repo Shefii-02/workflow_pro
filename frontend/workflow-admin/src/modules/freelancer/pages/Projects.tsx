@@ -9,6 +9,7 @@ import { Badge } from '../../../shared/components/Badge'
 import { DropdownMenu } from '../../../shared/components/DropdownMenu'
 import { mockProjects } from '../../../shared/utils/mock-data'
 import type { Project } from '../../../shared/types'
+import { ROUTES } from '../../../shared/constants/routes'
 
 const FreelancerProjectsPage: React.FC = () => {
   const navigate = useNavigate()
@@ -221,7 +222,7 @@ const FreelancerProjectsPage: React.FC = () => {
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Button onClick={() => navigate('/freelancer/projects/new')}>
+            <Button onClick={() => navigate(ROUTES.FREELANCER_PROJECTS_NEW)}>
               <Plus className="w-4 h-4 mr-2" />
               Find Projects
             </Button>

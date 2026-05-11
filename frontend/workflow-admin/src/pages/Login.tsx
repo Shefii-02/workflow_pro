@@ -8,6 +8,7 @@ import { loginAsync } from '../store/authSlice'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
+import { ROUTES } from '../shared/constants/routes'
 
 const loginSchema = z.object({
   email: z.string().email('Enter a valid email'),
@@ -22,7 +23,7 @@ export default function Login() {
   const location = useLocation()
   const authState = useAppSelector((state) => state.auth)
 
-  const from = (location.state as { from?: Location })?.from?.pathname ?? '/'
+  const from = (location.state as { from?: Location })?.from?.pathname ?? ROUTES.ROOT
 
   const {
     register,
@@ -31,8 +32,8 @@ export default function Login() {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'admin@workflow.com',
-      password: 'Password123',
+      email: '',
+      password: '',
     },
   })
 
@@ -52,7 +53,7 @@ export default function Login() {
         <div className="mb-8 text-center">
           <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Admin portal</p>
           <h1 className="mt-4 text-3xl font-semibold text-slate-950">Sign in to Workflow</h1>
-          <p className="mt-2 text-sm text-slate-500">Use admin@workflow.com / Password123 to demo access.</p>
+          <p className="mt-2 text-sm text-slate-500">Enter your account credentials to continue.</p>
         </div>
 
         <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
@@ -77,7 +78,7 @@ export default function Login() {
 
         <p className="mt-6 text-center text-sm text-slate-500">
           New here?{' '}
-          <Link className="font-medium text-brand-600 hover:text-brand-700" to="/register">
+          <Link className="font-medium text-brand-600 hover:text-brand-700" to={ROUTES.REGISTER}>
             Create an account
           </Link>
         </p>

@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { logoutAsync, logout } from '../store/authSlice'
+import { ROUTES } from '../shared/constants/routes'
 
 export function useLogout() {
   const dispatch = useAppDispatch()
@@ -23,7 +24,7 @@ export function useLogout() {
       localStorage.removeItem('sessionWarningShown')
 
       // Redirect to login
-      window.location.href = '/login'
+      window.location.href = ROUTES.LOGIN
     }
   }, [dispatch, refreshToken])
 

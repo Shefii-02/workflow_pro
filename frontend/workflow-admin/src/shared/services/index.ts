@@ -9,18 +9,29 @@ import type {
   Task,
   User,
 } from '../types'
-import { mockUsers } from '../utils/mock-data'
+import { AccountType, UserRole } from '../types'
+import { API_ROUTES } from '../constants/routes'
 
 export { apiCache, createApiCacheKey } from './api-cache'
 export type { ApiCacheEntry, ApiCacheOptions } from './api-cache'
-
-// Mock Auth Service - validates against mock users
-const MOCK_PASSWORD = 'password123'
 
 type QueryParams = Partial<PaginationParams> & Record<string, string | number | boolean | undefined>
 type EntityMutation<T extends { id: string; createdAt: string; updatedAt: string }> = Partial<
   Omit<T, 'id' | 'createdAt' | 'updatedAt'>
 >
+
+type BackendUser = Partial<User> & {
+  account_type?: string
+  created_at?: string
+  updated_at?: string
+}
+
+type BackendAuthResponse = Partial<AuthResponse> & {
+  access_token?: string
+  refresh_token?: string
+  expires_in?: number
+  user?: BackendUser
+}
 
 function getResponseData<T>(response: { data: ApiResponse<T> }): T {
   if (response.data.data === undefined) {
@@ -28,6 +39,60 @@ function getResponseData<T>(response: { data: ApiResponse<T> }): T {
   }
 
   return response.data.data
+}
+
+function unwrapResponseData<T>(response: { data: ApiResponse<T> | T }): T {
+  const payload = response.data
+  if (payload && typeof payload === 'object' && 'data' in payload) {
+    const apiResponse = payload as ApiResponse<T>
+    if (apiResponse.data === undefined) {
+      throw new Error(apiResponse.error || apiResponse.message || 'API response did not include data')
+    }
+    return apiResponse.data
+  }
+
+  return payload as T
+}
+
+function normalizeUser(user: BackendUser): User {
+  const now = new Date().toISOString()
+  const rawAccountType = user.accountType || user.account_type || AccountType.SUPER_ADMIN
+  const accountType = rawAccountType === 'sp' ? AccountType.SUPER_ADMIN : rawAccountType
+
+  return {
+    id: user.id || '',
+    email: user.email || '',
+    name: user.name || user.email || 'User',
+    avatar: user.avatar,
+    accountType: Object.values(AccountType).includes(accountType as AccountType)
+      ? accountType as AccountType
+      : AccountType.SUPER_ADMIN,
+    role: user.role || UserRole.ADMIN,
+    permissions: user.permissions || ['view_dashboard'],
+    status: user.status || 'active',
+    createdAt: user.createdAt || user.created_at || now,
+    updatedAt: user.updatedAt || user.updated_at || now,
+  }
+}
+
+function normalizeAuthResponse(payload: BackendAuthResponse): AuthResponse {
+  if (!payload.user) {
+    throw new Error('Login response did not include user data')
+  }
+
+  const token = payload.token || payload.access_token
+  const refreshToken = payload.refreshToken || payload.refresh_token
+
+  if (!token || !refreshToken) {
+    throw new Error('Login response did not include auth tokens')
+  }
+
+  return {
+    token,
+    refreshToken,
+    expiresIn: payload.expiresIn || payload.expires_in || 3600,
+    user: normalizeUser(payload.user),
+  }
 }
 
 function createEntityService<T extends { id: string; createdAt: string; updatedAt: string }>(resourcePath: string) {
@@ -58,64 +123,43 @@ function createEntityService<T extends { id: string; createdAt: string; updatedA
   }
 }
 
-const createAuthResponse = (user: User): AuthResponse => ({
-  user,
-  token: `mock_token_${user.id}`,
-  refreshToken: `mock_refresh_${user.id}`,
-  expiresIn: 3600,
-})
-
 export const authService = {
   login: async (credentials: AuthCredentials): Promise<AuthResponse> => {
-    // Mock implementation: find user by email and validate password
-    const user = mockUsers.find((u) => u.email === credentials.email)
-    
-    if (!user) {
-      throw new Error('Invalid email or password')
-    }
-    
-    // Simple password check (in real app, this would be hashed on backend)
-    if (credentials.password !== MOCK_PASSWORD) {
-      throw new Error('Invalid email or password')
-    }
-    
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    
-    return createAuthResponse(user)
+    const response = await apiClient.post<ApiResponse<BackendAuthResponse> | BackendAuthResponse>(API_ROUTES.AUTH.LOGIN, credentials)
+    return normalizeAuthResponse(unwrapResponseData(response))
   },
 
   register: async (userData: Partial<User> & { password: string }): Promise<AuthResponse> => {
-    const response = await apiClient.post<ApiResponse<AuthResponse>>('/auth/register', userData)
-    return getResponseData(response)
+    const response = await apiClient.post<ApiResponse<BackendAuthResponse> | BackendAuthResponse>(API_ROUTES.AUTH.REGISTER, userData)
+    return normalizeAuthResponse(unwrapResponseData(response))
   },
 
   logout: async (): Promise<void> => {
-    // Mock logout
-    await new Promise((resolve) => setTimeout(resolve, 300))
+    await apiClient.post(API_ROUTES.AUTH.LOGOUT)
   },
 
   refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
-    const response = await apiClient.post<ApiResponse<AuthResponse>>('/auth/refresh', {
+    const response = await apiClient.post<ApiResponse<BackendAuthResponse> | BackendAuthResponse>(API_ROUTES.AUTH.REFRESH, {
       refreshToken,
+      refresh_token: refreshToken,
     })
-    return getResponseData(response)
+    return normalizeAuthResponse(unwrapResponseData(response))
   },
 
   getCurrentUser: async (): Promise<User> => {
-    const response = await apiClient.get<ApiResponse<User>>('/auth/me')
-    return getResponseData(response)
+    const response = await apiClient.get<ApiResponse<BackendUser> | BackendUser>(API_ROUTES.AUTH.ME)
+    return normalizeUser(unwrapResponseData(response))
   },
 
   forgotPassword: async (email: string): Promise<{ message: string }> => {
-    const response = await apiClient.post<ApiResponse<{ message: string }>>('/auth/forgot-password', {
+    const response = await apiClient.post<ApiResponse<{ message: string }>>(API_ROUTES.AUTH.FORGOT_PASSWORD, {
       email,
     })
     return getResponseData(response)
   },
 
   resetPassword: async (token: string, newPassword: string): Promise<{ message: string }> => {
-    const response = await apiClient.post<ApiResponse<{ message: string }>>('/auth/reset-password', {
+    const response = await apiClient.post<ApiResponse<{ message: string }>>(API_ROUTES.AUTH.RESET_PASSWORD, {
       token,
       newPassword,
     })
@@ -125,22 +169,22 @@ export const authService = {
 
 export const userService = {
   getUser: async (id: string): Promise<User> => {
-    const response = await apiClient.get<ApiResponse<User>>(`/users/${id}`)
+    const response = await apiClient.get<ApiResponse<User>>(`${API_ROUTES.USERS.BASE}/${id}`)
     return getResponseData(response)
   },
 
   updateUser: async (id: string, userData: Partial<User>): Promise<User> => {
-    const response = await apiClient.patch<ApiResponse<User>>(`/users/${id}`, userData)
+    const response = await apiClient.patch<ApiResponse<User>>(`${API_ROUTES.USERS.BASE}/${id}`, userData)
     return getResponseData(response)
   },
 
   updateProfile: async (profileData: Partial<User>): Promise<User> => {
-    const response = await apiClient.patch<ApiResponse<User>>('/users/profile', profileData)
+    const response = await apiClient.patch<ApiResponse<User>>(API_ROUTES.USERS.PROFILE, profileData)
     return getResponseData(response)
   },
 
   changePassword: async (oldPassword: string, newPassword: string): Promise<{ message: string }> => {
-    const response = await apiClient.post<ApiResponse<{ message: string }>>('/users/change-password', {
+    const response = await apiClient.post<ApiResponse<{ message: string }>>(API_ROUTES.USERS.CHANGE_PASSWORD, {
       oldPassword,
       newPassword,
     })
@@ -148,14 +192,14 @@ export const userService = {
   },
 
   deleteAccount: async (): Promise<{ message: string }> => {
-    const response = await apiClient.delete<ApiResponse<{ message: string }>>('/users/account')
+    const response = await apiClient.delete<ApiResponse<{ message: string }>>(API_ROUTES.USERS.ACCOUNT)
     return getResponseData(response)
   },
 }
 
-const companiesApi = createEntityService<Company>('/companies')
-const projectsApi = createEntityService<Project>('/projects')
-const tasksApi = createEntityService<Task>('/tasks')
+const companiesApi = createEntityService<Company>(API_ROUTES.COMPANIES)
+const projectsApi = createEntityService<Project>(API_ROUTES.PROJECTS)
+const tasksApi = createEntityService<Task>(API_ROUTES.TASKS)
 
 export const companyService = {
   getCompanies: companiesApi.getMany,

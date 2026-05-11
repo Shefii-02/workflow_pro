@@ -1,12 +1,32 @@
 // Account Types
 export const AccountType = {
-  SP: 'sp',
+  SUPER_ADMIN: 'super_admin',
+  ADMIN: 'admin',
+  ADMIN_STAFF: 'admin_staff',
   COMPANY: 'company',
+  COMPANY_STAFF: 'company_staff',
   FREELANCER: 'freelancer',
   CLIENT: 'client',
+  CLIENT_STAFF: 'client_staff',
 } as const
 
 export type AccountType = (typeof AccountType)[keyof typeof AccountType]
+
+export const ADMIN_ACCOUNT_TYPES = [
+  AccountType.SUPER_ADMIN,
+  AccountType.ADMIN,
+  AccountType.ADMIN_STAFF,
+] as const
+
+export const COMPANY_ACCOUNT_TYPES = [
+  AccountType.COMPANY,
+  AccountType.COMPANY_STAFF,
+] as const
+
+export const CLIENT_ACCOUNT_TYPES = [
+  AccountType.CLIENT,
+  AccountType.CLIENT_STAFF,
+] as const
 
 // User Roles
 export const UserRole = {

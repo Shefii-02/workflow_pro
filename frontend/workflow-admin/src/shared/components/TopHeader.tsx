@@ -7,6 +7,7 @@ import { CommandPalette } from './CommandPalette'
 import { useTheme } from '../theme/useTheme'
 import { Bell, ChevronDown, Command, LogOut, Menu, Search, Settings, Sun, Moon, User as UserIcon } from 'lucide-react'
 import type { SidebarItem } from '../types'
+import { ROUTES } from '../constants/routes'
 
 interface TopHeaderProps {
   commandItems?: SidebarItem[]
@@ -47,9 +48,9 @@ export function TopHeader({ commandItems = [], onToggleMobileMenu }: TopHeaderPr
       return flattenCommandItems(commandItems)
     }
     return [
-      { id: 'dashboard', label: 'View dashboard', description: 'Open your dashboard', path: '/sp/dashboard', icon: '📊' },
-      { id: 'projects', label: 'View projects', description: 'Open project management', path: '/company/projects', icon: '📂' },
-      { id: 'settings', label: 'Open settings', description: 'Manage your workspace settings', path: '/company/settings', icon: '⚙️' },
+      { id: 'dashboard', label: 'View dashboard', description: 'Open your dashboard', path: ROUTES.SP_DASHBOARD, icon: '📊' },
+      { id: 'projects', label: 'View projects', description: 'Open project management', path: ROUTES.COMPANY_PROJECTS, icon: '📂' },
+      { id: 'settings', label: 'Open settings', description: 'Manage your workspace settings', path: ROUTES.COMPANY_SETTINGS, icon: '⚙️' },
     ]
   }, [commandItems])
 
@@ -70,7 +71,7 @@ export function TopHeader({ commandItems = [], onToggleMobileMenu }: TopHeaderPr
 
   const handleLogout = () => {
     dispatch(logout())
-    navigate('/login', { replace: true })
+    navigate(ROUTES.LOGIN, { replace: true })
   }
 
   return (

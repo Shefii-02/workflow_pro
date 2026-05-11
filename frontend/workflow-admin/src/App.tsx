@@ -5,6 +5,7 @@ import { useSessionTracker } from './hooks/useSessionTracker'
 import { AuthErrorBoundary } from './auth/components/AuthErrorBoundary'
 import { LoadingScreen, useConfirmDialog } from './shared/components'
 import { appRoutes } from './routes/routeConfig'
+import { ROUTES } from './shared/constants/routes'
 
 function AppContent() {
   useTokenRefresh()
@@ -30,7 +31,7 @@ function AppContent() {
             localStorage.setItem('sessionWarningShown', 'true')
           },
           onCancel: () => {
-            window.location.href = '/login'
+            window.location.href = ROUTES.LOGIN
           },
         })
       }

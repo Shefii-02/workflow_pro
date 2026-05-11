@@ -2,7 +2,7 @@ import { lazy, useMemo } from 'react'
 import type { RouteObject } from 'react-router-dom'
 import { Navigate, Outlet } from 'react-router-dom'
 import { ROUTES } from '../shared/constants'
-import { AccountType } from '../shared/types'
+import { AccountType, ADMIN_ACCOUNT_TYPES, CLIENT_ACCOUNT_TYPES, COMPANY_ACCOUNT_TYPES } from '../shared/types'
 import { AccountTypeRoute, PermissionRoute } from './RouteMiddleware'
 import AuthGuard from '../auth/guards/AuthGuard'
 import { Layout } from '../shared/components/Layout'
@@ -34,7 +34,7 @@ const FreelancerProjects = lazy(() => import('../modules/freelancer/pages/Projec
 const ClientDashboard = lazy(() => import('../modules/client/pages/Dashboard'))
 
 function SPLayout() {
-  const sidebarItems = useMemo(() => getSidebarItems(AccountType.SP), [])
+  const sidebarItems = useMemo(() => getSidebarItems(AccountType.SUPER_ADMIN), [])
 
   return (
     <Layout
@@ -111,7 +111,7 @@ export const appRoutes: RouteObject[] = [
       {
         path: 'sp',
         element: (
-          <AccountTypeRoute allowedTypes={[AccountType.SP]}>
+          <AccountTypeRoute allowedTypes={ADMIN_ACCOUNT_TYPES}>
             <SPLayout />
           </AccountTypeRoute>
         ),
@@ -388,7 +388,7 @@ export const appRoutes: RouteObject[] = [
       {
         path: 'company',
         element: (
-          <AccountTypeRoute allowedTypes={[AccountType.COMPANY]}>
+          <AccountTypeRoute allowedTypes={COMPANY_ACCOUNT_TYPES}>
             <CompanyLayout />
           </AccountTypeRoute>
         ),
@@ -484,7 +484,7 @@ export const appRoutes: RouteObject[] = [
       {
         path: 'client',
         element: (
-          <AccountTypeRoute allowedTypes={[AccountType.CLIENT]}>
+          <AccountTypeRoute allowedTypes={CLIENT_ACCOUNT_TYPES}>
             <ClientLayout />
           </AccountTypeRoute>
         ),

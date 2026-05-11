@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance, type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { API_BASE_URL, API_TIMEOUT, STORAGE_KEYS } from '../constants'
+import { API_ROUTES, ROUTES } from '../constants/routes'
 import { Storage } from '../utils/helpers'
 
 // Create axios instance
@@ -35,11 +36,11 @@ apiClient.interceptors.response.use(
       try {
         const refreshToken = Storage.get(STORAGE_KEYS.REFRESH_TOKEN)
         if (refreshToken) {
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+          const response = await axios.post(`${API_BASE_URL}${API_ROUTES.AUTH.REFRESH}`, {
             refreshToken,
           })
 
-          const { token } = response.data
+          const token = response.data?.token || response.data?.access_token || response.data?.data?.token || response.data?.data?.access_token
           Storage.set(STORAGE_KEYS.AUTH_TOKEN, token)
 
           if (originalRequest.headers) {
@@ -53,7 +54,7 @@ apiClient.interceptors.response.use(
         Storage.remove(STORAGE_KEYS.AUTH_TOKEN)
         Storage.remove(STORAGE_KEYS.REFRESH_TOKEN)
         Storage.remove(STORAGE_KEYS.USER)
-        window.location.href = '/login'
+        window.location.href = ROUTES.LOGIN
       }
     }
 

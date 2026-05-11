@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { API_ROUTES, ROUTES } from '../shared/constants/routes'
 
 export interface LoginPayload {
   email: string
@@ -85,7 +86,7 @@ api.interceptors.response.use(
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         localStorage.removeItem('user')
-        window.location.href = '/login'
+        window.location.href = ROUTES.LOGIN
         return Promise.reject(refreshError)
       }
     }
@@ -96,26 +97,26 @@ api.interceptors.response.use(
 
 export const authApi = {
   login: async (payload: LoginPayload): Promise<AuthResponse> => {
-    const response = await api.post('/auth/login', payload)
+    const response = await api.post(API_ROUTES.AUTH.LOGIN, payload)
     return response.data
   },
 
   register: async (payload: RegisterPayload): Promise<AuthResponse> => {
-    const response = await api.post('/auth/register', payload)
+    const response = await api.post(API_ROUTES.AUTH.REGISTER, payload)
     return response.data
   },
 
   refreshToken: async (refreshToken: string): Promise<RefreshTokenResponse> => {
-    const response = await api.post('/auth/refresh', { refresh_token: refreshToken })
+    const response = await api.post(API_ROUTES.AUTH.REFRESH, { refresh_token: refreshToken })
     return response.data
   },
 
   logout: async (refreshToken: string): Promise<void> => {
-    await api.post('/auth/logout', { refresh_token: refreshToken })
+    await api.post(API_ROUTES.AUTH.LOGOUT, { refresh_token: refreshToken })
   },
 
   getCurrentUser: async (): Promise<{ user: AuthResponse['user'] }> => {
-    const response = await api.get('/auth/me')
+    const response = await api.get(API_ROUTES.AUTH.ME)
     return response.data
   },
 }

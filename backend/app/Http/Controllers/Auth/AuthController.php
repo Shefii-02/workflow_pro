@@ -63,7 +63,7 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'account_type' => $user->account_type ?? 'company', // Default account type
+                'account_type' => $user->role ?? 'company', // Default account type
             ]
         ]);
     }

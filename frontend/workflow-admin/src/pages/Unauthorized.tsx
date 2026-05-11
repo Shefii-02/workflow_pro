@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../shared/components/Button'
+import { ROUTES } from '../shared/constants/routes'
 
 export default function UnauthorizedPage() {
   const navigate = useNavigate()
@@ -19,7 +20,7 @@ export default function UnauthorizedPage() {
           <Button onClick={() => navigate(-1)} variant="outline" className="w-full sm:w-auto">
             Go back
           </Button>
-          <Button onClick={() => navigate('/login')} className="w-full sm:w-auto">
+          <Button onClick={() => navigate(ROUTES.LOGIN)} className="w-full sm:w-auto">
             Return to sign in
           </Button>
         </div>

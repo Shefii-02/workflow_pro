@@ -8,6 +8,7 @@ import { registerAsync } from '../store/authSlice'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
+import { ROUTES } from '../shared/constants/routes'
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Enter your name'),
@@ -32,7 +33,7 @@ export default function Register() {
 
   useEffect(() => {
     if (authState.isAuthenticated) {
-      navigate('/', { replace: true })
+      navigate(ROUTES.ROOT, { replace: true })
     }
   }, [authState.isAuthenticated, navigate])
 
@@ -77,7 +78,7 @@ export default function Register() {
 
         <p className="mt-6 text-center text-sm text-slate-500">
           Already have an account?{' '}
-          <Link className="font-medium text-brand-600 hover:text-brand-700" to="/login">
+          <Link className="font-medium text-brand-600 hover:text-brand-700" to={ROUTES.LOGIN}>
             Sign in
           </Link>
         </p>

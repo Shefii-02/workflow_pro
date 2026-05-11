@@ -9,6 +9,7 @@ import { Badge } from '../../../shared/components/Badge'
 import { DropdownMenu } from '../../../shared/components/DropdownMenu'
 import { mockCompanies } from '../../../shared/utils/mock-data'
 import type { Company } from '../../../shared/types'
+import { ROUTES } from '../../../shared/constants/routes'
 
 const CompaniesPage: React.FC = () => {
   const navigate = useNavigate()
@@ -159,7 +160,7 @@ const CompaniesPage: React.FC = () => {
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Button onClick={() => navigate('/sp/companies/new')}>
+            <Button onClick={() => navigate(ROUTES.SP_COMPANIES_NEW)}>
               <Plus className="w-4 h-4 mr-2" />
               Add Company
             </Button>

@@ -341,10 +341,14 @@ const clientSidebarConfig: SidebarItem[] = [
 ]
 
 export const SIDEBAR_CONFIG: Record<AccountType, SidebarItem[]> = {
-  [AccountType.SP]: spSidebarConfig,
+  [AccountType.SUPER_ADMIN]: spSidebarConfig,
+  [AccountType.ADMIN]: spSidebarConfig,
+  [AccountType.ADMIN_STAFF]: spSidebarConfig,
   [AccountType.COMPANY]: companySidebarConfig,
+  [AccountType.COMPANY_STAFF]: companySidebarConfig,
   [AccountType.FREELANCER]: freelancerSidebarConfig,
   [AccountType.CLIENT]: clientSidebarConfig,
+  [AccountType.CLIENT_STAFF]: clientSidebarConfig,
 }
 
 export function getSidebarItems(accountType: AccountType): SidebarItem[] {

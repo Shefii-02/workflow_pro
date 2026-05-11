@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useMemo } from 'react'
 import type { SidebarItem } from '../types'
+import { ROUTES } from '../constants/routes'
 
 interface BreadcrumbsProps {
   items: SidebarItem[]
@@ -33,7 +34,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
     <div className="rounded-xl border border-slate-200/60 bg-white/80 px-4 py-3 shadow-sm backdrop-blur-sm">
       <nav className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
         <Link
-          to="/"
+          to={ROUTES.ROOT}
           className="flex items-center gap-2 rounded-lg px-2 py-1 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

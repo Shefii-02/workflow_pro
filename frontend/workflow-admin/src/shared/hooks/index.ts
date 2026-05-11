@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppSelector } from '../../app/store/hooks'
 import type { Permission, AccountType } from '../types'
+import { ROUTES } from '../constants/routes'
 export { useCachedApiQuery } from './useCachedApiQuery'
 
 // Use Auth
@@ -74,7 +75,7 @@ export function useRequireAuth() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login', { replace: true })
+      navigate(ROUTES.LOGIN, { replace: true })
     }
   }, [isAuthenticated, navigate])
 
