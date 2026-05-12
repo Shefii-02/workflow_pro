@@ -288,6 +288,8 @@ class User extends Authenticatable implements JWTSubject
 
 
     public function getAccountTypeAttribute(){
-        return $this->role;
+        return $this->acc_type;
     }
+
+
 }

@@ -16,14 +16,23 @@ class DemoUsersSeeder extends Seeder
     public function run()
     {
 
+
+        $wf_company = Company::create([
+            'id' => Str::uuid(),
+            'name' => "Workflow",
+            'slug' => "workflow",
+            'currency' => 'INR',
+            'timezone' => 'UTC'
+        ]);
+
         // Super Admin User (IMPORTANT)
         User::create([
             'id' => Str::uuid(),
             'name' => "Super Admin User",
             'email' => "admin@mail.com",
             'password' => Hash::make('123456'),
-            'company_id' => Str::uuid(),
-            'role' => 'super_admin'
+            'company_id' => $wf_company->id,
+            'acc_type' => 'super_admin'
         ]);
 
         // Freelancer User (IMPORTANT)
@@ -33,7 +42,7 @@ class DemoUsersSeeder extends Seeder
             'email' => "freelancer_user@mail.com",
             'password' => Hash::make('123456'),
             'company_id' => Str::uuid(),
-            'role' => 'freelancer'
+            'acc_type' => 'freelancer'
         ]);
 
         // Client User (IMPORTANT)
@@ -43,7 +52,7 @@ class DemoUsersSeeder extends Seeder
             'email' => "client_user@mail.com",
             'password' => Hash::make('123456'),
             'company_id' => Str::uuid(),
-            'role' => 'client'
+            'acc_type' => 'client'
         ]);
 
         // Create Company
@@ -65,7 +74,7 @@ class DemoUsersSeeder extends Seeder
                     'email' => "user_$rand@mail.com",
                     'password' => Hash::make('123456'),
                     'company_id' => $company->id,
-                    'role' => 'company_staff'
+                    'acc_type' => 'company_staff'
                 ]);
             }
 
@@ -76,7 +85,7 @@ class DemoUsersSeeder extends Seeder
                 'email' => "compmany_admin_user_$i@mail.com",
                 'password' => Hash::make('123456'),
                 'company_id' => $company->id,
-                'role' => 'company'
+                'acc_type' => 'company'
             ]);
         }
     }

@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->text('avatar_url')->nullable();
 
-            $table->enum('role',['freelancer','company','client','super_admin','admin_staff','admin','company_staff','client_staff'])->default('freelancer');
+            $table->enum('acc_type',['freelancer','company','client','super_admin','admin_staff','admin','company_staff','client_staff'])->default('freelancer');
 
             $table->uuid('company_id')->nullable();
 

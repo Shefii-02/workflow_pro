@@ -18,7 +18,9 @@ class Permission extends Model
         'action',
 
         'slug',
+        'acc_type'
     ];
+
 
     public function roles()
     {
