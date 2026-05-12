@@ -38,6 +38,9 @@ class AuthController extends Controller
 
         $user = auth()->user();
 
+        // Load user permissions through roles
+        $permissions = $user->permissions()->pluck('slug')->toArray();
+
         // Revoke existing refresh tokens for this user
         RefreshToken::where('user_id', $user->id)
             ->where('revoked', false)
@@ -63,7 +66,11 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'account_type' => $user->role ?? 'company', // Default account type
+                'account_type' => $user->account_type ?? 'company',
+                'permissions' => $permissions,
+                'email_verified_at' => $user->email_verified_at,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
             ]
         ]);
     }
@@ -113,7 +120,11 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'account_type' => $user->account_type ?? 'company',
+                'account_type' => $user->account_type ?? 'freelancer',
+                'permissions' => $user->permissions()->pluck('slug')->toArray(),
+                'email_verified_at' => $user->email_verified_at,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
             ]
         ]);
     }
@@ -122,12 +133,16 @@ class AuthController extends Controller
     {
         $user = auth()->user();
 
+        // Load user permissions through roles
+        $permissions = $user->permissions()->pluck('slug')->toArray();
+
         return response()->json([
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
                 'account_type' => $user->account_type ?? 'company',
+                'permissions' => $permissions,
                 'email_verified_at' => $user->email_verified_at,
                 'created_at' => $user->created_at,
                 'updated_at' => $user->updated_at,

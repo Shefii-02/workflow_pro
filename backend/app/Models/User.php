@@ -285,4 +285,9 @@ class User extends Authenticatable implements JWTSubject
                 'status',
             ]);
     }
+
+
+    public function getAccountTypeAttribute(){
+        return $this->role;
+    }
 }
